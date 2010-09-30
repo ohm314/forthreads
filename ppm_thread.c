@@ -472,7 +472,6 @@ int ppm_cthread_unlock(int *mutex_id) {
 }
 
 
-
 /*****************************************/
 /*       mutex attribute routines        */
 /*****************************************/
@@ -538,6 +537,13 @@ int ppm_cthread_mutexattr_init(int *attr) {
     return info;
 
 }
+
+
+/*****************************************/
+/*    condition variable routines        */
+/*****************************************/
+
+
 
 
 
