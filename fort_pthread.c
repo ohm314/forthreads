@@ -88,7 +88,7 @@ void array_init(array_t **array,int size) {
 
     if (*array == NULL)
         *array = (array_t*)malloc(sizeof(array_t));
-    pthread_mutex_init((*array)->mutex,NULL);
+    pthread_mutex_init(&((*array)->mutex),NULL);
     (*array)->data = (void**)malloc(sizeof(void*)*size);
     for(i = 0; i < size; i++)
         (*array)->data[i] = NULL;
@@ -116,6 +116,9 @@ void array_delete(array_t *array) {
 void forthread_init(int *info) {
     int i = 0;
     pthread_t stid;
+    
+    *info = 0;
+    
     if (is_initialized) {
         *info = FT_EINIT;
         return;
@@ -124,7 +127,7 @@ void forthread_init(int *info) {
     array_init(&threads,INIT_SIZE);
     array_init(&thread_attrs,INIT_SIZE);
     array_init(&once_ctrls,INIT_SIZE);
-    array_init(&mutex,INIT_SIZE);
+    array_init(&mutexes,INIT_SIZE);
     array_init(&mutex_attrs,INIT_SIZE);
     
     // allocate and store the thread master ID
@@ -134,11 +137,11 @@ void forthread_init(int *info) {
     threads->after++;
     
     is_initialized = 1;
-    *info = 0;
 }
 
-int forthread_destroy(int* info) {
+void forthread_destroy(int* info) {
     // TODO: deallocate all, destroy all threads, mutexes
+  *info = 0;
 }
 
 // This only works for pointer arrays!!
@@ -166,7 +169,7 @@ void forthread_create(int *thread_id, int *attr_id,
         return;
     }
 
-    pthread_mutex_lock(threads->mutex);
+    pthread_mutex_lock(&(threads->mutex));
     if (threads->after == threads->size) {
         // we exhausted the thread id and attribute arrays, double space
         array_resize(&threads,threads->size*2);
@@ -187,8 +190,7 @@ void forthread_create(int *thread_id, int *attr_id,
         free(attr);
     
     if (*info) {
-        pthread_mutex_unlock(threads->mutex);
-        *info = ret;
+        pthread_mutex_unlock(&(threads->mutex));
         return;
     }
     
@@ -196,7 +198,7 @@ void forthread_create(int *thread_id, int *attr_id,
     threads->after++;
 
 
-    pthread_mutex_unlock(threads->mutex);
+    pthread_mutex_unlock(&(threads->mutex));
     
 }
 
@@ -244,7 +246,7 @@ void forthread_join(int *thread_id, void **value_ptr, int *info) {
         return;
     }
 
-    pthread_mutex_lock(threads->mutex);
+    pthread_mutex_lock(&(threads->mutex));
     if (!is_valid(threads,*thread_id)) {
         *info = FT_EINVALID;
         return;
@@ -253,14 +255,14 @@ void forthread_join(int *thread_id, void **value_ptr, int *info) {
     *info = pthread_join(*((pthread_t*)(threads->data[*thread_id])),value_ptr);
 
     if (info) {
-        pthread_mutex_unlock(threads->mutex);
+        pthread_mutex_unlock(&(threads->mutex));
         return;
     }
     
     free(threads->data[*thread_id]);
     threads->data[*thread_id] = NULL;
     
-    pthread_mutex_unlock(threads->mutex);
+    pthread_mutex_unlock(&(threads->mutex));
 }
 
 void forthread_cancel(int *thread_id, int *info) {
@@ -312,12 +314,13 @@ void forthread_self(int *thread_id, int *info) {
             return;
         }
     }
-    *info = FT_EINvALID;
+    *info = FT_EINVALID;
 }
 void forthread_atfork(void (*prepare)(void), 
         void (*parent)(void), void (*child)(void), int *info) {
 
-    return pthread_atfork(prepare,parent,child);
+    *info = pthread_atfork(prepare,parent,child);
+
 }
 
 /*****************************************/
@@ -332,10 +335,10 @@ void forthread_attr_destroy(int *attr, int *info) {
         return;
     }
 
-    pthread_mutex_lock(thread_attrs->mutex);
+    pthread_mutex_lock(&(thread_attrs->mutex));
     
     if (!is_valid(thread_attrs,*attr)) {
-        pthread_mutex_unlock(thread_attrs->mutex);
+        pthread_mutex_unlock(&(thread_attrs->mutex));
         *info = FT_EINVALID;
         return;
     }
@@ -343,13 +346,13 @@ void forthread_attr_destroy(int *attr, int *info) {
     *info = pthread_attr_destroy(((pthread_attr_t*)(thread_attrs->data[*attr])));
     
     if (*info) {
-        pthread_mutex_unlock(thread_attrs->mutex);
+        pthread_mutex_unlock(&(thread_attrs->mutex));
         return;
     }
     free(thread_attrs->data[*attr]);
     thread_attrs->data[*attr] = NULL;
     
-    pthread_mutex_unlock(thread_attrs->mutex);
+    pthread_mutex_unlock(&(thread_attrs->mutex));
     
 }
 
@@ -362,7 +365,7 @@ void forthread_attr_init(int *attr, int *info) {
         return;
     }
 
-    pthread_mutex_lock(thread_attrs->mutex);
+    pthread_mutex_lock(&(thread_attrs->mutex));
 
     if (thread_attrs->after == thread_attrs->size) {
         // we exhausted the thread id and attribute arrays, double space
@@ -374,7 +377,7 @@ void forthread_attr_init(int *attr, int *info) {
     *info = pthread_attr_init(thread_attrs->data[thread_attrs->after]);
     
     if (*info) {
-        pthread_mutex_unlock(thread_attr->mutex);
+        pthread_mutex_unlock(&(thread_attrs->mutex));
         return;
     }
 
@@ -390,7 +393,7 @@ void forthread_attr_init(int *attr, int *info) {
 /*             mutex routines            */
 /*****************************************/
 
-void forthread_mutex_destroy(int *mutex_id) {
+void forthread_mutex_destroy(int *mutex_id, int *info) {
     
     *info = 0;
 
@@ -399,27 +402,26 @@ void forthread_mutex_destroy(int *mutex_id) {
         return;
     }
     
-    pthread_mutex_lock(mutexes->mutex);
+    pthread_mutex_lock(&(mutexes->mutex));
     
     if (!is_valid(mutexes,*mutex_id)) {
-        pthread_mutex_unlock(mutexes->mutex);
+        pthread_mutex_unlock(&(mutexes->mutex));
         *info = FT_EINVALID;
         return;
     }
 
-    info = pthread_mutex_destroy(((pthread_mutex_t*)(mutexes->data[*mutexes_id])));
+    *info = pthread_mutex_destroy(((pthread_mutex_t*)(mutexes->data[*mutex_id])));
     
     if (info) {
-        pthread_mutex_unlock(mutex->mutex);
+        pthread_mutex_unlock(&(mutexes->mutex));
         return;
     }
 
-    free(mutex->data[*mutex_id]);
-    mutex->data[*mutex_id] = NULL;
+    free(mutexes->data[*mutex_id]);
+    mutexes->data[*mutex_id] = NULL;
     
     pthread_mutex_unlock(&mutex_destroy_mutex);
     
-    return 0;
 
 }
 
@@ -433,11 +435,11 @@ int forthread_mutex_init(int *mutex_id, int *attr_id) {
         return FT_EINIT;
 
     pthread_mutex_lock(&mutex_init_mutex);
-    if (mutex->after == mutex->size) {
+    if (mutexes->after == mutexes->size) {
         // we exhausted the mutex id array, double space
-        array_resize(&mutex,mutex->size*2);
+        array_resize(&mutexes,mutexes->size*2);
     }
-    mutex->data[mutex->after] = (pthread_mutex_t*) malloc(sizeof(pthread_mutex_t));
+    mutexes->data[mutexes->after] = (pthread_mutex_t*) malloc(sizeof(pthread_mutex_t));
     
     if (*attr_id == -1) {
         attr = NULL;
@@ -445,15 +447,15 @@ int forthread_mutex_init(int *mutex_id, int *attr_id) {
         attr = thread_attrs->data[*attr_id];
     }
 
-    info = pthread_mutex_init((pthread_mutex_t*)(mutex->data[mutex->after]), attr);
+    info = pthread_mutex_init((pthread_mutex_t*)(mutexes->data[mutexes->after]), attr);
 
     if (info) {
         pthread_mutex_unlock(&mutex_init_mutex);
         return info;
     }
     
-    *mutex_id = mutex->after;
-    mutex->after++;
+    *mutex_id = mutexes->after;
+    mutexes->after++;
 
     pthread_mutex_unlock(&mutex_init_mutex);
     
@@ -467,11 +469,11 @@ int forthread_lock(int *mutex_id) {
     if (!is_initialized)
         return FT_EINIT;
 
-    if (!is_valid(mutex,*mutex_id)) {
+    if (!is_valid(mutexes,*mutex_id)) {
         return FT_EINVALID;
     }
 
-    return pthread_mutex_lock((pthread_mutex_t*)(mutex->data[*mutex_id]));
+    return pthread_mutex_lock((pthread_mutex_t*)(mutexes->data[*mutex_id]));
     
 }
 
@@ -481,11 +483,11 @@ int forthread_trylock(int *mutex_id) {
     if (!is_initialized)
         return FT_EINIT;
 
-    if (!is_valid(mutex,*mutex_id)) {
+    if (!is_valid(mutexes,*mutex_id)) {
         return FT_EINVALID;
     }
 
-    return pthread_mutex_trylock((pthread_mutex_t*)(mutex->data[*mutex_id]));
+    return pthread_mutex_trylock((pthread_mutex_t*)(mutexes->data[*mutex_id]));
 
 }
 
@@ -495,10 +497,10 @@ int forthread_unlock(int *mutex_id) {
     if (!is_initialized)
         return FT_EINIT;
 
-    if (!is_valid(mutex,*mutex_id))
+    if (!is_valid(mutexes,*mutex_id))
         return FT_EINVALID;
 
-    return pthread_mutex_unlock((pthread_mutex_t*)(mutex->data[*mutex_id]));
+    return pthread_mutex_unlock((pthread_mutex_t*)(mutexes->data[*mutex_id]));
 
 }
 

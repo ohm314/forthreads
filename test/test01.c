@@ -15,21 +15,21 @@ int main(int argc, char** argv) {
 
     printf("Initializing fort_threads\n");
     
-    forthread_init();
+    forthread_init(&info);
 
     printf("creating a thread\n");
-    for (i = 0; i < 1000;i++) {
+    for (i = 0; i < 10;i++) {
         arg[i] = i;
-        info = forthread_create(&tid[i],&aid,&run,&arg[i]);
+        forthread_create(&tid[i],&aid,&run,&arg[i],&info);
         if (info) {
             printf("error %d\n",info);
         }
         printf("thread %d created\n",tid[i]);
     }
 
-    for (i = 0; i < 1000; i++) {
+    for (i = 0; i < 10; i++) {
         printf("join thread %d\n",tid[i]);
-        info = forthread_join(&tid[i],NULL);
+        forthread_join(&tid[i],NULL,&info);
         if (info) {
             printf("error %d\n",info);
         }
