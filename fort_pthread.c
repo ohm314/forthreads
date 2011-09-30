@@ -15,18 +15,19 @@
 /**
  * error codes
  **/
-#define PPM_EINIT -1
-#define PPM_EINVALID -2
+#define FT_EINIT -1
+#define FT_EINVALID -2
 
 /**
  * A convenient array type
  **/
 
 
-typedef struct {
+typedef struct array_tag {
     void **data;
     int size;
     int after;
+    pthread_mutex_t mutex;
 } array_t;
 
 /**
@@ -62,7 +63,7 @@ array_t *thread_attrs = NULL;
 /*
  * holds the mutex IDs
  **/
-array_t *mutex = NULL;
+array_t *mutexes = NULL;
 
 /**
  * holds thread mutex attributes, the index does not
@@ -78,11 +79,16 @@ array_t *mutex_attrs = NULL;
  **/
 array_t *once_ctrls = NULL;
 
+/**
+ * Initializes a given array. The argument array must be either
+ * already allocated or a NULL pointer.
+ **/
 void array_init(array_t **array,int size) {
     int i;
 
     if (*array == NULL)
         *array = (array_t*)malloc(sizeof(array_t));
+    pthread_mutex_init((*array)->mutex,NULL);
     (*array)->data = (void**)malloc(sizeof(void*)*size);
     for(i = 0; i < size; i++)
         (*array)->data[i] = NULL;
@@ -92,12 +98,13 @@ void array_init(array_t **array,int size) {
 
 void array_resize(array_t **array,int size) {
     int i;
-
+    
     (*array)->data = (void**)realloc((*array)->data,sizeof(void*)*size);
     (*array)->size = size;
     
     for(i = (*array)->after; i < size; i++)
         (*array)->data[i] = NULL;
+
 }
 
 void array_delete(array_t *array) {
@@ -106,12 +113,13 @@ void array_delete(array_t *array) {
 }
 
 
-int ppm_cthread_init() {
+void forthread_init(int *info) {
     int i = 0;
-    int info = 0;
     pthread_t stid;
-    if (is_initialized)
-        return 0;
+    if (is_initialized) {
+        *info = FT_EINIT;
+        return;
+    }
 
     array_init(&threads,INIT_SIZE);
     array_init(&thread_attrs,INIT_SIZE);
@@ -126,10 +134,10 @@ int ppm_cthread_init() {
     threads->after++;
     
     is_initialized = 1;
-    return 0;
+    *info = 0;
 }
 
-int ppm_cthread_destroy() {
+int forthread_destroy(int* info) {
     // TODO: deallocate all, destroy all threads, mutexes
 }
 
@@ -147,15 +155,18 @@ int is_valid(array_t *arr, int id) {
 /*****************************************/
 
 
-int ppm_cthread_create(int *thread_id, int *attr_id, void *(*start_routine)(void *),void *arg) {
+void forthread_create(int *thread_id, int *attr_id,
+        void *(*start_routine)(void *), void *arg, int* info) {
     int i = 0;
-    int info = 0;
     pthread_attr_t *attr;
-    
-    if (!is_initialized)
-        return PPM_EINIT;
+    *info = 0;
 
-    pthread_mutex_lock(&thread_create_mutex);
+    if (!is_initialized) {
+        *info = FT_EINIT;
+        return;
+    }
+
+    pthread_mutex_lock(threads->mutex);
     if (threads->after == threads->size) {
         // we exhausted the thread id and attribute arrays, double space
         array_resize(&threads,threads->size*2);
@@ -170,127 +181,141 @@ int ppm_cthread_create(int *thread_id, int *attr_id, void *(*start_routine)(void
         attr = thread_attrs->data[*attr_id];
     }
 
-    info = pthread_create(threads->data[threads->after], attr, start_routine, arg);
+    *info = pthread_create(threads->data[threads->after], attr, start_routine, arg);
 
-    if (info) {
-        pthread_mutex_unlock(&thread_create_mutex);
-        return info;
+    if (*attr_id == -1)
+        free(attr);
+    
+    if (*info) {
+        pthread_mutex_unlock(threads->mutex);
+        *info = ret;
+        return;
     }
     
     *thread_id = threads->after;
     threads->after++;
 
-    if (*attr_id == -1)
-        free(attr);
 
-    pthread_mutex_unlock(&thread_create_mutex);
+    pthread_mutex_unlock(threads->mutex);
     
-    return 0;
 }
 
-int ppm_cthread_detach(int *thread_id) {
+void forthread_detach(int *thread_id, int *info) {
 
-    if (!is_initialized)
-        return PPM_EINIT;
+    if (!is_initialized) {
+        *info = FT_EINIT;
+        return;
+    }
 
     if (!is_valid(threads,*thread_id)) {
-        return PPM_EINVALID;
+        *info = FT_EINVALID;
+        return;
     }
 
-    return pthread_detach(*((pthread_t*)(threads->data[*thread_id])));
+    *info = pthread_detach(*((pthread_t*)(threads->data[*thread_id])));
 }
 
-int ppm_cthread_equal(int *t1, int *t2) {
+void forthread_equal(int *t1, int *t2, int *info) {
+    *info = 0;
 
     if (!is_initialized)
-        return PPM_EINIT;
-
-    if (!is_valid(threads,*t1)) {
-        return PPM_EINVALID;
-    }
-    
-    if (!is_valid(threads,*t2)) {
-        return PPM_EINVALID;
-    }
-    
-    return pthread_equal(*((pthread_t*)(threads->data[*t1])),
+        *info = FT_EINIT;
+    else if (!is_valid(threads,*t1))
+        *info = FT_EINVALID;
+    else if (!is_valid(threads,*t2))
+        *info = FT_EINVALID;
+    else
+        *info = pthread_equal(*((pthread_t*)(threads->data[*t1])),
                 *((pthread_t*)(threads->data[*t2])));
+
 }
 
-int ppm_cthread_exit(void *value_ptr) {
+void forthread_exit(void *value_ptr) {
 
     pthread_exit(value_ptr);
 
 }
 
-int ppm_cthread_join(int *thread_id, void **value_ptr) {
-    int info = 0;
+void forthread_join(int *thread_id, void **value_ptr, int *info) {
+    *info = 0;
 
-    if (!is_initialized)
-        return PPM_EINIT;
-
-    pthread_mutex_lock(&thread_join_mutex);
-    if (!is_valid(threads,*thread_id)) {
-        return PPM_EINVALID;
+    if (!is_initialized) {
+        *info = FT_EINIT;
+        return;
     }
 
-    info = pthread_join(*((pthread_t*)(threads->data[*thread_id])),value_ptr);
+    pthread_mutex_lock(threads->mutex);
+    if (!is_valid(threads,*thread_id)) {
+        *info = FT_EINVALID;
+        return;
+    }
+
+    *info = pthread_join(*((pthread_t*)(threads->data[*thread_id])),value_ptr);
 
     if (info) {
-        pthread_mutex_unlock(&thread_join_mutex);
-        return info;
+        pthread_mutex_unlock(threads->mutex);
+        return;
     }
     
     free(threads->data[*thread_id]);
     threads->data[*thread_id] = NULL;
     
-    pthread_mutex_unlock(&thread_join_mutex);
-    return info;
+    pthread_mutex_unlock(threads->mutex);
 }
 
-int ppm_cthread_cancel(int *thread_id) {
-    int info = 0;
+void forthread_cancel(int *thread_id, int *info) {
+    *info = 0;
 
-    if (!is_initialized)
-        return PPM_EINIT;
+    if (!is_initialized) {
+        *info = FT_EINIT;
+        return;
+    }
 
     if (!is_valid(threads,*thread_id)) {
-        return PPM_EINVALID;
+        *info = FT_EINVALID;
+        return;
     }
 
-    return pthread_cancel(*((pthread_t*)(threads->data[*thread_id])));
+    *info = pthread_cancel(*((pthread_t*)(threads->data[*thread_id])));
 
 }
 
-int ppm_cthread_once(int *once_ctrl_id, void (*routine)(void)) {
-    int info = 0;
+void forthread_once(int *once_ctrl_id, void (*routine)(void), int *info) {
+    *info = 0;
 
     if (!is_initialized)
-        return PPM_EINIT;
-
-    if (!is_valid(once_ctrls,*once_ctrl_id)) {
-        return PPM_EINVALID;
-    }
-
-    return pthread_once(once_ctrls->data[*once_ctrl_id],routine);
+        *info = FT_EINIT;
+    else if (!is_valid(once_ctrls,*once_ctrl_id))
+        *info = FT_EINVALID;
+    else
+        *info = pthread_once(once_ctrls->data[*once_ctrl_id],routine);
 
 }
 
-int ppm_cthread_self() {
+void forthread_self(int *thread_id, int *info) {
     pthread_t tid;
     int i = 0;
+    *info = 0;
+    *thread_id = -1;
+
+    if (!is_initialized) {
+        *info = FT_EINIT;
+        return;
+    }
 
     tid = pthread_self();
     for (i = 0; i < threads->after; i++) {
         if (threads->data[i] == NULL)
             continue;
-        if (pthread_equal(tid,*((pthread_t*)(threads->data[i]))))
-            return i;
+        if (pthread_equal(tid,*((pthread_t*)(threads->data[i])))) {
+            *thread_id = i;
+            return;
+        }
     }
-    return -1;
+    *info = FT_EINvALID;
 }
-
-int ppm_cthread_atfork(void (*prepare)(void), void (*parent)(void), void (*child)(void)) {
+void forthread_atfork(void (*prepare)(void), 
+        void (*parent)(void), void (*child)(void), int *info) {
 
     return pthread_atfork(prepare,parent,child);
 }
@@ -299,41 +324,45 @@ int ppm_cthread_atfork(void (*prepare)(void), void (*parent)(void), void (*child
 /*      attribute object routines        */
 /*****************************************/
 
-int ppm_cthread_attr_destroy(int *attr) {
-    int info = 0;
+void forthread_attr_destroy(int *attr, int *info) {
+    *info = 0;
 
-    if (!is_initialized)
-        return PPM_EINIT;
+    if (!is_initialized) {
+        *info = FT_EINIT;
+        return;
+    }
 
-    pthread_mutex_lock(&thread_attr_mutex);
+    pthread_mutex_lock(thread_attrs->mutex);
     
     if (!is_valid(thread_attrs,*attr)) {
-        pthread_mutex_unlock(&thread_attr_mutex);
-        return PPM_EINVALID;
+        pthread_mutex_unlock(thread_attrs->mutex);
+        *info = FT_EINVALID;
+        return;
     }
     
-    info = pthread_attr_destroy(((pthread_attr_t*)(thread_attrs->data[*attr])));
+    *info = pthread_attr_destroy(((pthread_attr_t*)(thread_attrs->data[*attr])));
     
-    if (info) {
-        pthread_mutex_unlock(&thread_attr_mutex);
-        return info;
+    if (*info) {
+        pthread_mutex_unlock(thread_attrs->mutex);
+        return;
     }
     free(thread_attrs->data[*attr]);
     thread_attrs->data[*attr] = NULL;
     
-    pthread_mutex_unlock(&thread_attr_mutex);
+    pthread_mutex_unlock(thread_attrs->mutex);
     
-    return 0;
 }
 
 
-int ppm_cthread_attr_init(int *attr) {
-    int info = 0;
+void forthread_attr_init(int *attr, int *info) {
+    *info = 0;
 
-    if (!is_initialized)
-        return PPM_EINIT;
+    if (!is_initialized) {
+        *info = FT_EINIT;
+        return;
+    }
 
-    pthread_mutex_lock(&thread_attr_mutex);
+    pthread_mutex_lock(thread_attrs->mutex);
 
     if (thread_attrs->after == thread_attrs->size) {
         // we exhausted the thread id and attribute arrays, double space
@@ -342,19 +371,18 @@ int ppm_cthread_attr_init(int *attr) {
     thread_attrs->data[thread_attrs->after] = 
         (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
 
-    info = pthread_attr_init(thread_attrs->data[thread_attrs->after]);
+    *info = pthread_attr_init(thread_attrs->data[thread_attrs->after]);
     
-    if (info) {
-        pthread_mutex_unlock(&thread_attr_mutex);
-        return info;
+    if (*info) {
+        pthread_mutex_unlock(thread_attr->mutex);
+        return;
     }
 
     *attr = thread_attrs->after;
     thread_attrs->after++;
 
-    pthread_mutex_unlock(&thread_attr_mutex);
+    pthread_mutex_unlock(&thread_attrs->mutex);
     
-    return info;
 }
 
 
@@ -362,25 +390,28 @@ int ppm_cthread_attr_init(int *attr) {
 /*             mutex routines            */
 /*****************************************/
 
-int ppm_cthread_mutex_destroy(int *mutex_id) {
+void forthread_mutex_destroy(int *mutex_id) {
     
-    int info = 0;
+    *info = 0;
 
-    if (!is_initialized)
-        return PPM_EINIT;
+    if (!is_initialized) {
+        *info = FT_EINIT;
+        return;
+    }
     
-    pthread_mutex_lock(&mutex_destroy_mutex);
+    pthread_mutex_lock(mutexes->mutex);
     
-    if (!is_valid(mutex,*mutex_id)) {
-        pthread_mutex_unlock(&mutex_destroy_mutex);
-        return PPM_EINVALID;
+    if (!is_valid(mutexes,*mutex_id)) {
+        pthread_mutex_unlock(mutexes->mutex);
+        *info = FT_EINVALID;
+        return;
     }
 
-    info = pthread_mutex_destroy(((pthread_mutex_t*)(mutex->data[*mutex_id])));
+    info = pthread_mutex_destroy(((pthread_mutex_t*)(mutexes->data[*mutexes_id])));
     
     if (info) {
-        pthread_mutex_unlock(&mutex_destroy_mutex);
-        return info;
+        pthread_mutex_unlock(mutex->mutex);
+        return;
     }
 
     free(mutex->data[*mutex_id]);
@@ -393,13 +424,13 @@ int ppm_cthread_mutex_destroy(int *mutex_id) {
 }
 
 
-ppm_cthread_mutex_init(int *mutex_id, int *attr_id) {
+int forthread_mutex_init(int *mutex_id, int *attr_id) {
     int i = 0;
     int info = 0;
     pthread_mutexattr_t *attr;
     
     if (!is_initialized)
-        return PPM_EINIT;
+        return FT_EINIT;
 
     pthread_mutex_lock(&mutex_init_mutex);
     if (mutex->after == mutex->size) {
@@ -430,42 +461,42 @@ ppm_cthread_mutex_init(int *mutex_id, int *attr_id) {
 
 }
 
-int ppm_cthread_lock(int *mutex_id) {
+int forthread_lock(int *mutex_id) {
     int info = 0;
     
     if (!is_initialized)
-        return PPM_EINIT;
+        return FT_EINIT;
 
     if (!is_valid(mutex,*mutex_id)) {
-        return PPM_EINVALID;
+        return FT_EINVALID;
     }
 
     return pthread_mutex_lock((pthread_mutex_t*)(mutex->data[*mutex_id]));
     
 }
 
-int ppm_cthread_trylock(int *mutex_id) {
+int forthread_trylock(int *mutex_id) {
     int info = 0;
 
     if (!is_initialized)
-        return PPM_EINIT;
+        return FT_EINIT;
 
     if (!is_valid(mutex,*mutex_id)) {
-        return PPM_EINVALID;
+        return FT_EINVALID;
     }
 
     return pthread_mutex_trylock((pthread_mutex_t*)(mutex->data[*mutex_id]));
 
 }
 
-int ppm_cthread_unlock(int *mutex_id) {
+int forthread_unlock(int *mutex_id) {
     int info = 0;
 
     if (!is_initialized)
-        return PPM_EINIT;
+        return FT_EINIT;
 
     if (!is_valid(mutex,*mutex_id))
-        return PPM_EINVALID;
+        return FT_EINVALID;
 
     return pthread_mutex_unlock((pthread_mutex_t*)(mutex->data[*mutex_id]));
 
@@ -476,17 +507,17 @@ int ppm_cthread_unlock(int *mutex_id) {
 /*       mutex attribute routines        */
 /*****************************************/
 
-int ppm_cthread_mutexattr_destroy(int *attr) {
+int forthread_mutexattr_destroy(int *attr) {
     int info = 0;
 
     if (!is_initialized)
-        return PPM_EINIT;
+        return FT_EINIT;
 
     pthread_mutex_lock(&mutex_attr_mutex);
     
     if (!is_valid(mutex_attrs,*attr)) {
         pthread_mutex_unlock(&mutex_attr_mutex);
-        return PPM_EINVALID;
+        return FT_EINVALID;
     }
     
     info = pthread_mutexattr_destroy(((pthread_mutexattr_t*)(mutex_attrs->data[*attr])));
@@ -507,11 +538,11 @@ int ppm_cthread_mutexattr_destroy(int *attr) {
 }
 
 
-int ppm_cthread_mutexattr_init(int *attr) {
+int forthread_mutexattr_init(int *attr) {
     int info = 0;
 
     if (!is_initialized)
-        return PPM_EINIT;
+        return FT_EINIT;
 
     pthread_mutex_lock(&mutex_attr_mutex);
 

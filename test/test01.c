@@ -1,4 +1,4 @@
-#include "../ppm_thread.c"
+#include "../fort_pthread.c"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -13,14 +13,14 @@ int main(int argc, char** argv) {
     int info = 0;
     int i = 0;
 
-    printf("Initializing ppm_thread\n");
+    printf("Initializing fort_threads\n");
     
-    ppm_cthread_init();
+    forthread_init();
 
     printf("creating a thread\n");
     for (i = 0; i < 1000;i++) {
         arg[i] = i;
-        info = ppm_cthread_create(&tid[i],&aid,&run,&arg[i]);
+        info = forthread_create(&tid[i],&aid,&run,&arg[i]);
         if (info) {
             printf("error %d\n",info);
         }
@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
 
     for (i = 0; i < 1000; i++) {
         printf("join thread %d\n",tid[i]);
-        info = ppm_cthread_join(&tid[i],NULL);
+        info = forthread_join(&tid[i],NULL);
         if (info) {
             printf("error %d\n",info);
         }
