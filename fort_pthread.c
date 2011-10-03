@@ -23,8 +23,6 @@
 /**
  * A convenient array type
  **/
-
-
 typedef struct array_tag {
   void **data;
   int size;
@@ -33,9 +31,20 @@ typedef struct array_tag {
 } array_t;
 
 /**
+ * A convenient volatile array type
+ **/
+typedef struct varray_tag {
+  volatile void **data;
+  int size;
+  int after;
+  pthread_mutex_t mutex;
+} varray_t;
+
+
+
+/**
  * global data structures
  **/
-
 
 int is_initialized = 0;
 
@@ -104,6 +113,27 @@ array_t *barriers = NULL;
 array_t *barrier_attrs = NULL;
 
 /**
+ * an array to hold spinlock variable (pthread_spinlock_t) 
+ * structures
+ **/
+varray_t *spinlocks = NULL;
+
+/**
+ * an array to hold thread read-write lock variable (pthread_rwlock_t) 
+ * structures
+ **/
+array_t *rwlocks = NULL;
+
+/**
+ * holds thread rwlock variable attributes, the index does not
+ * necesseraly concide with the one of conds.
+ *
+ * This array is just to allow different threads handle
+ * their condition variables
+ **/
+array_t *rwlock_attrs = NULL;
+
+/**
  * Initializes a given array. The argument array must be either
  * already allocated or a NULL pointer.
  **/
@@ -114,6 +144,23 @@ void array_init(array_t **array,int size) {
     *array = (array_t*)malloc(sizeof(array_t));
   pthread_mutex_init(&((*array)->mutex),NULL);
   (*array)->data = (void**)malloc(sizeof(void*)*size);
+  for(i = 0; i < size; i++)
+    (*array)->data[i] = NULL;
+  (*array)->size = size;
+  (*array)->after = 0;
+}
+
+/**
+ * Initializes a given varray. The argument array must be either
+ * already allocated or a NULL pointer.
+ **/
+void varray_init(varray_t **array,int size) {
+  int i;
+
+  if (*array == NULL)
+    *array = (varray_t*)malloc(sizeof(varray_t));
+  pthread_mutex_init(&((*array)->mutex),NULL);
+  (*array)->data = (volatile void**)malloc(sizeof(void*)*size);
   for(i = 0; i < size; i++)
     (*array)->data[i] = NULL;
   (*array)->size = size;
@@ -131,7 +178,23 @@ void array_resize(array_t **array,int size) {
 
 }
 
+void varray_resize(varray_t **array,int size) {
+  int i;
+
+  (*array)->data = (volatile void**)realloc((*array)->data,sizeof(volatile void*)*size);
+  (*array)->size = size;
+
+  for(i = (*array)->after; i < size; i++)
+    (*array)->data[i] = NULL;
+
+}
+
 void array_delete(array_t *array) {
+  free(array->data);
+  free(array);
+}
+
+void varray_delete(varray_t *array) {
   free(array->data);
   free(array);
 }
@@ -155,6 +218,9 @@ void forthread_init(int *info) {
   array_init(&mutex_attrs,INIT_SIZE);
   array_init(&conds,INIT_SIZE);
   array_init(&cond_attrs,INIT_SIZE);
+  array_init(&barriers,INIT_SIZE);
+  array_init(&barrier_attrs,INIT_SIZE);
+  varray_init(&spinlocks,INIT_SIZE);
 
   // allocate and store the thread master ID
   threads->data[0] = (pthread_t*) malloc(sizeof(pthread_t));
@@ -172,6 +238,15 @@ void forthread_destroy(int* info) {
 
 // This only works for pointer arrays!!
 int is_valid(array_t *arr, int id) {
+  if ((id >= 0) && (id < arr->after) && 
+      (arr->data[id] != NULL))
+    return 1;
+  else
+    return 0;
+}
+
+// varray version
+int vis_valid(varray_t *arr, int id) {
   if ((id >= 0) && (id < arr->after) && 
       (arr->data[id] != NULL))
     return 1;
@@ -531,7 +606,7 @@ void forthread_trylock(int *mutex_id, int *info) {
 
 }
 
-void forthread_unlock(int *mutex_id, int *info) {
+void forthread_mutex_unlock(int *mutex_id, int *info) {
   *info = FT_OK;
 
   if (!is_initialized) {
@@ -967,8 +1042,6 @@ void forthread_barrierattr_destroy(int *attr,int *info) {
 
   pthread_mutex_unlock(&(barrier_attrs->mutex));
 
-
-
 }
 
 
@@ -1002,3 +1075,352 @@ void forthread_barrierattr_init(int *attr,int *info) {
   pthread_mutex_unlock(&(barrier_attrs->mutex));
 
 }
+
+/*************************************/
+/*    spin variable routines         */
+/*************************************/
+
+void forthread_spin_destroy(int *spinlock_id, int *info) {
+
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(spinlocks->mutex));
+
+  if (!vis_valid(spinlocks,*spinlock_id)) {
+    pthread_mutex_unlock(&(spinlocks->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_spin_destroy(((pthread_spinlock_t*)(spinlocks->data[*spinlock_id])));
+
+  if (*info) {
+    pthread_mutex_unlock(&(spinlocks->mutex));
+    return;
+  }
+
+  free((void *)spinlocks->data[*spinlock_id]);
+  spinlocks->data[*spinlock_id] = NULL;
+  
+  pthread_mutex_unlock(&(spinlocks->mutex));
+
+}
+
+
+void forthread_spin_init(int *spinlock_id, int *pshared, int *info) {
+  int i = 0;
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(spinlocks->mutex));
+  if (spinlocks->after == spinlocks->size) {
+    // we exhausted the mutex id array, double space
+    varray_resize(&spinlocks,spinlocks->size*2);
+  }
+  spinlocks->data[spinlocks->after] = (pthread_spinlock_t*) malloc(sizeof(pthread_spinlock_t));
+
+  *info = pthread_spin_init((pthread_spinlock_t*)(spinlocks->data[spinlocks->after])
+                               , *pshared);
+
+  if (*info) {
+    pthread_mutex_unlock(&(spinlocks->mutex));
+    return;
+  }
+
+  *spinlock_id = spinlocks->after;
+  spinlocks->after++;
+  
+  pthread_mutex_unlock(&(spinlocks->mutex));
+
+}
+
+// TODO: this might need a lock
+void forthread_spin_lock(int *lock_id, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  
+  if (!vis_valid(spinlocks,*lock_id)) {
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_spin_lock((pthread_spinlock_t*)(spinlocks->data[*lock_id]));
+  
+
+}
+
+// TODO: this might need a lock
+void forthread_spin_trylock(int *lock_id, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  
+  if (!vis_valid(spinlocks,*lock_id)) {
+    pthread_mutex_unlock(&(spinlocks->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_spin_trylock((pthread_spinlock_t*)(spinlocks->data[*lock_id]));
+
+}
+
+
+// TODO: this might need a lock
+void forthread_spin_unlock(int *lock_id, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  
+  if (!vis_valid(spinlocks,*lock_id)) {
+    pthread_mutex_unlock(&(spinlocks->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_spin_unlock((pthread_spinlock_t*)(spinlocks->data[*lock_id]));
+
+}
+
+
+/*************************************/
+/*    spin variable routines         */
+/*************************************/
+
+
+void forthread_rwlock_destroy(int *rwlock_id, int *info) {
+
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(rwlocks->mutex));
+
+  if (!is_valid(rwlocks,*rwlock_id)) {
+    pthread_mutex_unlock(&(rwlocks->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_rwlock_destroy(((pthread_rwlock_t*)(rwlocks->data[*rwlock_id])));
+
+  if (*info) {
+    pthread_mutex_unlock(&(rwlocks->mutex));
+    return;
+  }
+
+  free(rwlocks->data[*rwlock_id]);
+  rwlocks->data[*rwlock_id] = NULL;
+  
+  pthread_mutex_unlock(&(rwlocks->mutex));
+
+}
+
+
+void forthread_rwlock_init(int *rwlock_id, int *attr_id, int *info) {
+  int i = 0;
+  *info = FT_OK;
+  pthread_rwlockattr_t *attr;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(rwlocks->mutex));
+  if (rwlocks->after == rwlocks->size) {
+    // we exhausted the mutex id array, double space
+    array_resize(&rwlocks,rwlocks->size*2);
+  }
+  rwlocks->data[rwlocks->after] = (pthread_rwlock_t*) malloc(sizeof(pthread_rwlock_t));
+
+  if (*attr_id == -1) {
+    attr = NULL;
+  } else {
+    attr = rwlock_attrs->data[*attr_id];
+  }
+
+  *info = pthread_rwlock_init((pthread_rwlock_t*)(rwlocks->data[rwlocks->after])
+                               ,attr);
+
+  if (*info) {
+    pthread_mutex_unlock(&(rwlocks->mutex));
+    return;
+  }
+
+  *rwlock_id = rwlocks->after;
+  rwlocks->after++;
+  
+  pthread_mutex_unlock(&(rwlocks->mutex));
+
+}
+
+
+void forthread_rwlock_rdlock(int *lock_id, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+  
+  if (!is_valid(rwlocks,*lock_id)) {
+    pthread_mutex_unlock(&(rwlocks->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_rwlock_rdlock((pthread_rwlock_t*)(rwlocks->data[*lock_id]));
+
+}
+
+void forthread_rwlock_tryrdlock(int *lock_id, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+  
+  if (!is_valid(rwlocks,*lock_id)) {
+    pthread_mutex_unlock(&(rwlocks->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_rwlock_tryrdlock((pthread_rwlock_t*)(rwlocks->data[*lock_id]));
+
+}
+
+
+void forthread_rwlock_wrlock(int *lock_id, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+  
+  if (!is_valid(rwlocks,*lock_id)) {
+    pthread_mutex_unlock(&(rwlocks->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_rwlock_wrlock((pthread_rwlock_t*)(rwlocks->data[*lock_id]));
+
+}
+
+void forthread_rwlock_trywrlock(int *lock_id, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+  
+  if (!is_valid(rwlocks,*lock_id)) {
+    pthread_mutex_unlock(&(rwlocks->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_rwlock_trywrlock((pthread_rwlock_t*)(rwlocks->data[*lock_id]));
+
+}
+
+void forthread_rwlock_unlock(int *lock_id, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+  
+  if (!is_valid(rwlocks,*lock_id)) {
+    pthread_mutex_unlock(&(rwlocks->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_rwlock_unlock((pthread_rwlock_t*)(rwlocks->data[*lock_id]));
+
+}
+
+
+void forthread_rwlock_timedrdlock(int *lock_id, long *ns, int *info) {
+  struct timespec t;
+  *info = FT_OK;
+
+  // TODO: check if ns > 10^6 is allowed
+  t.tv_sec = 0;
+  t.tv_nsec = *ns;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+  
+  if (!is_valid(rwlocks,*lock_id)) {
+    *info = FT_EINVALID;
+    return;
+  }
+  
+  *info = pthread_rwlock_timedrdlock((pthread_rwlock_t*)(rwlocks->data[*lock_id]),
+                                 &t);
+
+}
+
+void forthread_rwlock_timedwrlock(int *lock_id, long *ns, int *info) {
+  struct timespec t;
+  *info = FT_OK;
+
+  // TODO: check if ns > 10^6 is allowed
+  t.tv_sec = 0;
+  t.tv_nsec = *ns;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+  
+  if (!is_valid(rwlocks,*lock_id)) {
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_rwlock_timedwrlock((pthread_rwlock_t*)(rwlocks->data[*lock_id]),
+                                 &t);
+
+}
+
+
+
+
+
+
