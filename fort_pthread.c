@@ -877,7 +877,7 @@ void forthread_barrier_destroy(int *barrier_id, int *info) {
 }
 
 
-void forthread_barrier_init(int *barrier_id, int *attr_id, int *info) {
+void forthread_barrier_init(int *barrier_id, int *attr_id, int *count, int *info) {
   int i = 0;
   *info = FT_OK;
   pthread_barrierattr_t *attr;
@@ -900,7 +900,8 @@ void forthread_barrier_init(int *barrier_id, int *attr_id, int *info) {
     attr = barrier_attrs->data[*attr_id];
   }
 
-  *info = pthread_barrier_init((pthread_barrier_t*)(barriers->data[barriers->after]), attr);
+  *info = pthread_barrier_init((pthread_barrier_t*)(barriers->data[barriers->after])
+                               ,attr, *count);
 
   if (*info) {
     pthread_mutex_unlock(&(barriers->mutex));
@@ -911,5 +912,93 @@ void forthread_barrier_init(int *barrier_id, int *attr_id, int *info) {
   barriers->after++;
   
   pthread_mutex_unlock(&(barriers->mutex));
+
+}
+
+void forthread_barrier_wait(int *barrier_id, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+  
+  if (!is_valid(barriers,*barrier_id)) {
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_barrier_wait((pthread_barrier_t*)(barriers->data[*barrier_id]));
+
+}
+
+
+/**************************************************/
+/*    barrier attribute variable routines         */
+/**************************************************/
+
+
+void forthread_barrierattr_destroy(int *attr,int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(barrier_attrs->mutex));
+
+  if (!is_valid(barrier_attrs,*attr)) {
+    pthread_mutex_unlock(&(barrier_attrs->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_barrierattr_destroy(((pthread_barrierattr_t*)(
+          barrier_attrs->data[*attr])));
+
+  if (*info) {
+    pthread_mutex_unlock(&(barrier_attrs->mutex));
+    return;
+  }
+
+  free(barrier_attrs->data[*attr]);
+  barrier_attrs->data[*attr] = NULL;
+
+  pthread_mutex_unlock(&(barrier_attrs->mutex));
+
+
+
+}
+
+
+void forthread_barrierattr_init(int *attr,int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(barrier_attrs->mutex));
+
+  if (barrier_attrs->after == barrier_attrs->size) {
+    // we exhausted the mutex attribute array, double space
+    array_resize(&barrier_attrs,barrier_attrs->size*2);
+  }
+  barrier_attrs->data[barrier_attrs->after] = 
+    (pthread_barrierattr_t*) malloc(sizeof(pthread_barrierattr_t));
+
+  *info = pthread_barrierattr_init(barrier_attrs->data[barrier_attrs->after]);
+
+  if (*info) {
+    pthread_mutex_unlock(&(barrier_attrs->mutex));
+    return;
+  }
+
+  *attr = barrier_attrs->after;
+  barrier_attrs->after++;
+
+  pthread_mutex_unlock(&(barrier_attrs->mutex));
 
 }
