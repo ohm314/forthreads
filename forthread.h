@@ -6,18 +6,6 @@
 #include <string.h>
 #include <time.h>
 
-/**
- * global parameters
- **/
-
-#define INIT_SIZE 4
-
-/**
- * error codes
- **/
-#define FT_OK 0
-#define FT_EINIT -1
-#define FT_EINVALID -2
 
 
 void forthread_init(int *info);
@@ -53,14 +41,6 @@ void forthread_atfork(void (*prepare)(void),
                       void (*parent)(void), 
                       void (*child)(void), int *info);
 
-/*****************************************/
-/*      attribute object routines        */
-/*****************************************/
-
-void forthread_attr_destroy(int *attr, int *info);
-
-
-void forthread_attr_init(int *attr, int *info);
 
 
 /*****************************************/
@@ -79,14 +59,6 @@ void forthread_trylock(int *mutex_id, int *info);
 
 void forthread_mutex_unlock(int *mutex_id, int *info);
 
-
-/*****************************************/
-/*       mutex attribute routines        */
-/*****************************************/
-
-void forthread_mutexattr_destroy(int *attr,int *info);
-
-void forthread_mutexattr_init(int *attr,int *info);
 
 
 /*****************************************/
@@ -110,15 +82,6 @@ void forthread_cond_broadcast(int *cond_id, int *info);
 
 void forthread_cond_signal(int *cond_id, int *info);
 
-/*****************************************************/
-/*    condition attriubute variable routines         */
-/*****************************************************/
-
-
-void forthread_condattr_destroy(int *attr,int *info);
-
-
-void forthread_condattr_init(int *attr,int *info);
 
 
 /****************************************/
@@ -133,14 +96,6 @@ void forthread_barrier_init(int *barrier_id, int *attr_id, int *count, int *info
 void forthread_barrier_wait(int *barrier_id, int *info);
 
 
-/**************************************************/
-/*    barrier attribute variable routines         */
-/**************************************************/
-
-
-void forthread_barrierattr_destroy(int *attr,int *info);
-
-void forthread_barrierattr_init(int *attr,int *info);
 
 /*************************************/
 /*    spin variable routines         */
@@ -159,7 +114,7 @@ void forthread_spin_trylock(int *lock_id, int *info);
 void forthread_spin_unlock(int *lock_id, int *info);
 
 /*************************************/
-/*    spin variable routines         */
+/*    rwlock variable routines         */
 /*************************************/
 
 
