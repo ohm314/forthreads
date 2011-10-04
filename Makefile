@@ -10,11 +10,11 @@ OBJECTS := $(patsubst %.c,%.o,$(SOURCES))
 all: $(TARGET)
 
 $(TARGET):  $(OBJECTS)
-	$(CC) -o $@ $(LDFLAGS) $<
+	$(CC) -o $@ $(LDFLAGS) $^
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(CDEBUG) -c $< -o $@
 
 
 clean:
-	rm -f *.co *.fo *.mod bench
+	rm -f *.o 

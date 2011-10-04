@@ -1,234 +1,54 @@
-#include <pthread.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
 /*
  * C wrappers to pthreads to make wrapping with Fortran simpler
  */
 
+#include "ft_data.h"
+#include "forthread.h"
 
-/**
- * global parameters
- **/
-
-#define INIT_SIZE 4
-
-/**
- * error codes
- **/
-#define FT_OK 0
-#define FT_EINIT -1
-#define FT_EINVALID -2
-
-/**
- * A convenient array type
- **/
-typedef struct array_tag {
-  void **data;
-  int size;
-  int after;
-  pthread_mutex_t mutex;
-} array_t;
-
-/**
- * A convenient volatile array type
- **/
-typedef struct varray_tag {
-  volatile void **data;
-  int size;
-  int after;
-  pthread_mutex_t mutex;
-} varray_t;
-
-
-
-/**
- * global data structures
- **/
-
-int is_initialized = 0;
-
-
-/**
- * holds the thread IDs
- **/
-array_t *threads = NULL;
-
-/** 
- * holds thread attributes, the index does not
- * necesseraly conincide with the one of threads.
- *
- * This array is just to allow different threads spawn new
- * threads at the same time.
- **/
-array_t *thread_attrs = NULL;
-
-/*
- * holds the mutex IDs
- **/
-array_t *mutexes = NULL;
-
-/**
- * holds thread mutex attributes, the index does not
- * necesseraly concide with the one of mutexes.
- *
- * This array is just to allow different threads handle
- * their mutexes
- **/
-array_t *mutex_attrs = NULL;
-
-/**
- * an array to hold pthread_once_t structures
- **/
-array_t *once_ctrls = NULL;
-
-/**
- * an array to hold thread condition variable (pthread_cond_t) 
- * structures
- **/
-array_t *conds = NULL;
-
-/**
- * holds thread condition variable attributes, the index does not
- * necesseraly concide with the one of conds.
- *
- * This array is just to allow different threads handle
- * their condition variables
- **/
-array_t *cond_attrs = NULL;
-
-/**
- * an array to hold thread barrier variable (pthread_barrier_t) 
- * structures
- **/
-array_t *barriers = NULL;
-
-/**
- * holds thread barrier variable attributes, the index does not
- * necesseraly concide with the one of conds.
- *
- * This array is just to allow different threads handle
- * their condition variables
- **/
-array_t *barrier_attrs = NULL;
-
-/**
- * an array to hold spinlock variable (pthread_spinlock_t) 
- * structures
- **/
-varray_t *spinlocks = NULL;
-
-/**
- * an array to hold thread read-write lock variable (pthread_rwlock_t) 
- * structures
- **/
-array_t *rwlocks = NULL;
-
-/**
- * holds thread rwlock variable attributes, the index does not
- * necesseraly concide with the one of conds.
- *
- * This array is just to allow different threads handle
- * their condition variables
- **/
-array_t *rwlock_attrs = NULL;
-
-/**
- * Initializes a given array. The argument array must be either
- * already allocated or a NULL pointer.
- **/
-void array_init(array_t **array,int size) {
-  int i;
-
-  if (*array == NULL)
-    *array = (array_t*)malloc(sizeof(array_t));
-  pthread_mutex_init(&((*array)->mutex),NULL);
-  (*array)->data = (void**)malloc(sizeof(void*)*size);
-  for(i = 0; i < size; i++)
-    (*array)->data[i] = NULL;
-  (*array)->size = size;
-  (*array)->after = 0;
-}
-
-/**
- * Initializes a given varray. The argument array must be either
- * already allocated or a NULL pointer.
- **/
-void varray_init(varray_t **array,int size) {
-  int i;
-
-  if (*array == NULL)
-    *array = (varray_t*)malloc(sizeof(varray_t));
-  pthread_mutex_init(&((*array)->mutex),NULL);
-  (*array)->data = (volatile void**)malloc(sizeof(void*)*size);
-  for(i = 0; i < size; i++)
-    (*array)->data[i] = NULL;
-  (*array)->size = size;
-  (*array)->after = 0;
-}
-
-void array_resize(array_t **array,int size) {
-  int i;
-
-  (*array)->data = (void**)realloc((*array)->data,sizeof(void*)*size);
-  (*array)->size = size;
-
-  for(i = (*array)->after; i < size; i++)
-    (*array)->data[i] = NULL;
-
-}
-
-void varray_resize(varray_t **array,int size) {
-  int i;
-
-  (*array)->data = (volatile void**)realloc((*array)->data,sizeof(volatile void*)*size);
-  (*array)->size = size;
-
-  for(i = (*array)->after; i < size; i++)
-    (*array)->data[i] = NULL;
-
-}
-
-void array_delete(array_t *array) {
-  free(array->data);
-  free(array);
-}
-
-void varray_delete(varray_t *array) {
-  free(array->data);
-  free(array);
-}
 
 
 void forthread_init(int *info) {
   int i = 0;
   pthread_t stid;
-
+  static int init = 0;
   *info = FT_OK;
 
-  if (is_initialized) {
+  if (init) {
     *info = FT_EINIT;
     return;
   }
-
+  threads = NULL;
   array_init(&threads,INIT_SIZE);
+  thread_attrs = NULL;
   array_init(&thread_attrs,INIT_SIZE);
+  once_ctrls = NULL;
   array_init(&once_ctrls,INIT_SIZE);
+  mutexes = NULL;
   array_init(&mutexes,INIT_SIZE);
+  mutex_attrs = NULL;
   array_init(&mutex_attrs,INIT_SIZE);
+  conds = NULL;
   array_init(&conds,INIT_SIZE);
+  cond_attrs = NULL;
   array_init(&cond_attrs,INIT_SIZE);
+  barriers = NULL;
   array_init(&barriers,INIT_SIZE);
+  barrier_attrs = NULL;
   array_init(&barrier_attrs,INIT_SIZE);
+  spinlocks = NULL;
   varray_init(&spinlocks,INIT_SIZE);
-
+  rwlocks = NULL;
+  array_init(&rwlocks,INIT_SIZE);
+  rwlock_attrs = NULL;
+  array_init(&rwlock_attrs,INIT_SIZE);
   // allocate and store the thread master ID
   threads->data[0] = (pthread_t*) malloc(sizeof(pthread_t));
   stid = pthread_self();
   memcpy(threads->data[0],&stid,sizeof(pthread_t));
   threads->after++;
 
-  is_initialized = 1;
+  init = 1;
+  is_initialized = init;
 }
 
 void forthread_destroy(int* info) {
@@ -236,23 +56,6 @@ void forthread_destroy(int* info) {
   *info = FT_OK;
 }
 
-// This only works for pointer arrays!!
-int is_valid(array_t *arr, int id) {
-  if ((id >= 0) && (id < arr->after) && 
-      (arr->data[id] != NULL))
-    return 1;
-  else
-    return 0;
-}
-
-// varray version
-int vis_valid(varray_t *arr, int id) {
-  if ((id >= 0) && (id < arr->after) && 
-      (arr->data[id] != NULL))
-    return 1;
-  else
-    return 0;
-}
 
 /*****************************************/
 /*         Thread routines               */
