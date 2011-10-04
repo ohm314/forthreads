@@ -78,9 +78,13 @@ void forthread_mutexattr_getprioceiling(int *attr, int *prioceiling, int *info);
 void forthread_mutexattr_setprioceiling(int *attr, int *prioceiling, int *info);
 
 void forthread_mutexattr_getprotocol(int *attr, int *protocol, int *info);
+
 void forthread_mutexattr_setprotocol(int *attr, int *protocol, int *info);
+
 void forthread_mutexattr_gettype(int *attr, int *type, int *info);
+
 void forthread_mutexattr_settype(int *attr, int *type, int *info);
+
 
 /*****************************************************/
 /*    condition attriubute variable routines         */
@@ -92,6 +96,14 @@ void forthread_condattr_destroy(int *attr,int *info);
 
 void forthread_condattr_init(int *attr,int *info);
 
+void forthread_condattr_getpshared(int *attr, int *pshared, int *info);
+
+void forthread_condattr_setpshared(int *attr, int *pshared, int *info);
+
+void forthread_condattr_getclock(int *attr, int *clock_id, int *info);
+
+void forthread_condattr_setclock(int *attr, int *clock_id, int *info);
+
 /**************************************************/
 /*    barrier attribute variable routines         */
 /**************************************************/
@@ -100,6 +112,24 @@ void forthread_condattr_init(int *attr,int *info);
 void forthread_barrierattr_destroy(int *attr,int *info);
 
 void forthread_barrierattr_init(int *attr,int *info);
+
+void forthread_barrierattr_getpshared(int *attr, int *pshared, int *info);
+
+void forthread_barrierattr_setpshared(int *attr, int *pshared, int *info);
+
+/**************************************************/
+/*    rwlock attribute variable routines         */
+/**************************************************/
+
+
+void forthread_rwlockattr_destroy(int *attr,int *info);
+
+void forthread_rwlockattr_init(int *attr,int *info);
+
+void forthread_rwlockattr_getpshared(int *attr, int *pshared, int *info);
+
+void forthread_rwlockattr_setpshared(int *attr, int *pshared, int *info);
+
 
 
 #endif //_FT_ATTR_H

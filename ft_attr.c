@@ -692,6 +692,102 @@ void forthread_condattr_init(int *attr,int *info) {
 
 }
 
+void forthread_condattr_getpshared(int *attr, int *pshared, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(cond_attrs->mutex));
+  if (!is_valid(cond_attrs,*attr)) {
+    pthread_mutex_unlock(&(cond_attrs->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_condattr_getpshared(
+                 (pthread_condattr_t*)(cond_attrs->data[*attr]),
+                 pshared);
+
+  pthread_mutex_unlock(&(cond_attrs->mutex));
+
+}
+
+void forthread_condattr_setpshared(int *attr, int *pshared, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(cond_attrs->mutex));
+  if (!is_valid(cond_attrs,*attr)) {
+    pthread_mutex_unlock(&(cond_attrs->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_condattr_setpshared(
+                 (pthread_condattr_t*)(cond_attrs->data[*attr]),
+                 *pshared);
+
+  pthread_mutex_unlock(&(cond_attrs->mutex));
+
+}
+
+void forthread_condattr_getclock(int *attr, int *clock_id, int *info) {
+  *info = FT_OK;
+  clockid_t cid; //we'll it casting onto an int. This may be dangerous
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(cond_attrs->mutex));
+  if (!is_valid(cond_attrs,*attr)) {
+    pthread_mutex_unlock(&(cond_attrs->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_condattr_getclock(
+                 (pthread_condattr_t*)(cond_attrs->data[*attr]),
+                 &cid);
+  *clock_id = (int)cid;
+
+  pthread_mutex_unlock(&(cond_attrs->mutex));
+
+}
+
+void forthread_condattr_setclock(int *attr, int *clock_id, int *info) {
+  *info = FT_OK;
+  clockid_t cid; //we'll be casting an int onto it. This may be dangerous.
+  cid = (clockid_t)clock_id; // this works with libc 2.13 x86_64 - check if there are any notable exceptions
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(cond_attrs->mutex));
+  if (!is_valid(cond_attrs,*attr)) {
+    pthread_mutex_unlock(&(cond_attrs->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_condattr_setclock(
+                 (pthread_condattr_t*)(cond_attrs->data[*attr]),
+                 cid);
+
+  pthread_mutex_unlock(&(cond_attrs->mutex));
+
+}
+
 
 /**************************************************/
 /*    barrier attribute variable routines         */
@@ -760,3 +856,169 @@ void forthread_barrierattr_init(int *attr,int *info) {
   pthread_mutex_unlock(&(barrier_attrs->mutex));
 
 }
+
+void forthread_barrierattr_getpshared(int *attr, int *pshared, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(barrier_attrs->mutex));
+  if (!is_valid(barrier_attrs,*attr)) {
+    pthread_mutex_unlock(&(barrier_attrs->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_barrierattr_getpshared(
+                 (pthread_barrierattr_t*)(barrier_attrs->data[*attr]),
+                 pshared);
+
+  pthread_mutex_unlock(&(barrier_attrs->mutex));
+
+}
+
+void forthread_barrierattr_setpshared(int *attr, int *pshared, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(barrier_attrs->mutex));
+  if (!is_valid(barrier_attrs,*attr)) {
+    pthread_mutex_unlock(&(barrier_attrs->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_barrierattr_setpshared(
+                 (pthread_barrierattr_t*)(barrier_attrs->data[*attr]),
+                 *pshared);
+
+  pthread_mutex_unlock(&(barrier_attrs->mutex));
+
+}
+
+/**************************************************/
+/*    rwlock attribute variable routines         */
+/**************************************************/
+
+
+void forthread_rwlockattr_destroy(int *attr,int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(rwlock_attrs->mutex));
+
+  if (!is_valid(rwlock_attrs,*attr)) {
+    pthread_mutex_unlock(&(rwlock_attrs->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_rwlockattr_destroy(((pthread_rwlockattr_t*)(
+          rwlock_attrs->data[*attr])));
+
+  if (*info) {
+    pthread_mutex_unlock(&(rwlock_attrs->mutex));
+    return;
+  }
+
+  free(rwlock_attrs->data[*attr]);
+  rwlock_attrs->data[*attr] = NULL;
+
+  pthread_mutex_unlock(&(rwlock_attrs->mutex));
+
+}
+
+
+void forthread_rwlockattr_init(int *attr,int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(rwlock_attrs->mutex));
+
+  if (rwlock_attrs->after == rwlock_attrs->size) {
+    // we exhausted the mutex attribute array, double space
+    array_resize(&rwlock_attrs,rwlock_attrs->size*2);
+  }
+  rwlock_attrs->data[rwlock_attrs->after] = 
+    (pthread_rwlockattr_t*) malloc(sizeof(pthread_rwlockattr_t));
+
+  *info = pthread_rwlockattr_init(rwlock_attrs->data[rwlock_attrs->after]);
+
+  if (*info) {
+    pthread_mutex_unlock(&(rwlock_attrs->mutex));
+    return;
+  }
+
+  *attr = rwlock_attrs->after;
+  rwlock_attrs->after++;
+
+  pthread_mutex_unlock(&(rwlock_attrs->mutex));
+
+}
+
+void forthread_rwlockattr_getpshared(int *attr, int *pshared, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(rwlock_attrs->mutex));
+  if (!is_valid(rwlock_attrs,*attr)) {
+    pthread_mutex_unlock(&(rwlock_attrs->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_rwlockattr_getpshared(
+                 (pthread_rwlockattr_t*)(rwlock_attrs->data[*attr]),
+                 pshared);
+
+  pthread_mutex_unlock(&(rwlock_attrs->mutex));
+
+}
+
+void forthread_rwlockattr_setpshared(int *attr, int *pshared, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(rwlock_attrs->mutex));
+  if (!is_valid(rwlock_attrs,*attr)) {
+    pthread_mutex_unlock(&(rwlock_attrs->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_rwlockattr_setpshared(
+                 (pthread_rwlockattr_t*)(rwlock_attrs->data[*attr]),
+                 *pshared);
+
+  pthread_mutex_unlock(&(rwlock_attrs->mutex));
+
+}
+
+
+
+
+
+
