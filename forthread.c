@@ -2,6 +2,7 @@
  * C wrappers to pthreads to make wrapping with Fortran simpler
  */
 
+
 #include "ft_consts.h"
 #include "ft_data.h"
 #include "ft_attr.h"
@@ -23,6 +24,8 @@ void forthread_init(int *info) {
   array_init(&threads,INIT_SIZE);
   thread_attrs = NULL;
   array_init(&thread_attrs,INIT_SIZE);
+  thread_keys = NULL;
+  array_init(&thread_keys,INIT_SIZE);
   once_ctrls = NULL;
   array_init(&once_ctrls,INIT_SIZE);
   mutexes = NULL;
@@ -233,7 +236,172 @@ void forthread_atfork(void (*prepare)(void),
 
 }
 
+// cannot be implemented using pthreads
+void forthread_cleanup_pop(int *execute, int *info) {
+  *info = FT_EINVALID;
 
+
+}
+
+// cannot be implemented using pthreads
+void forthread_cleanup_push(void *(*routine)(void *), void *arg, int* info) {
+  *info = FT_EINVALID;
+
+}
+
+void forthread_getconcurrency(int *currlevel, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  *currlevel = pthread_getconcurrency();
+
+}
+
+
+void forthread_setconcurrency(int *new_level, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  *info = pthread_setconcurrency(*new_level);
+
+}
+
+void forthread_getcpuclockid(int *thread, int *clock_id, int *info) {
+  *info = FT_OK;
+  clockid_t cid; //we'll it casting onto an int. This may be dangerous
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(threads->mutex));
+  if (!is_valid(threads,*thread)) {
+    pthread_mutex_unlock(&(threads->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_getcpuclockid(
+                 *((pthread_t*)(threads->data[*thread])),
+                 &cid);
+  *clock_id = (int)cid;
+
+  pthread_mutex_unlock(&(threads->mutex));
+
+}
+
+// implements pthread_getschedparam
+void forthread_getschedpriority(int *thread, int *policy, int *sched_priority, int *info) {
+  *info = FT_OK;
+  struct sched_param param;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(threads->mutex));
+  if (!is_valid(threads,*thread)) {
+    pthread_mutex_unlock(&(threads->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_getschedparam(*((pthread_t*)(threads->data[*thread])),policy,&param);
+
+  *sched_priority = param.sched_priority;
+
+  pthread_mutex_unlock(&(threads->mutex));
+
+}
+
+// implements pthreads setschedparam
+void forthread_setschedpriority(int *thread, int *policy, int *sched_priority, int *info) {
+  *info = FT_OK;
+  struct sched_param param;
+  param.sched_priority = *sched_priority;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(threads->mutex));
+  if (!is_valid(threads,*thread)) {
+    pthread_mutex_unlock(&(threads->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_setschedparam(*((pthread_t*)(threads->data[*thread])),*policy,&param);
+
+  pthread_mutex_unlock(&(threads->mutex));
+
+}
+
+/*****************************************/
+/*   storing private data in threads     */
+/*****************************************/
+
+
+void forthread_key_delete(int *key_id, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(thread_keys->mutex));
+
+  if (!is_valid(thread_keys,*key_id)) {
+    pthread_mutex_unlock(&(thread_keys->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_key_delete(*((pthread_key_t*)(thread_keys->data[*key_id])));
+
+  pthread_mutex_unlock(&(thread_keys->mutex));
+}
+
+void forthread_key_create(int *key_id,void (*destructor)(void *),int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(thread_keys->mutex));
+  if (thread_keys->after == thread_keys->size) {
+    // we exhausted the mutex id array, double space
+    array_resize(&thread_keys,thread_keys->size*2);
+  }
+  thread_keys->data[thread_keys->after] = (pthread_key_t*) malloc(sizeof(pthread_key_t));
+
+  *info = pthread_key_create((pthread_key_t*)(thread_keys->data[thread_keys->after]),destructor);
+
+  if (*info) {
+    pthread_mutex_unlock(&(thread_keys->mutex));
+    return;
+  }
+
+  *key_id = thread_keys->after;
+  thread_keys->after++;
+
+  pthread_mutex_unlock(&(thread_keys->mutex));
+
+}
 
 /*****************************************/
 /*             mutex routines            */
@@ -293,7 +461,7 @@ void forthread_mutex_init(int *mutex_id, int *attr_id, int *info) {
   if (*attr_id == -1) {
     attr = NULL;
   } else {
-    attr = thread_attrs->data[*attr_id];
+    attr = mutex_attrs->data[*attr_id];
   }
 
   *info = pthread_mutex_init((pthread_mutex_t*)(
@@ -952,11 +1120,9 @@ void forthread_rwlock_timedwrlock(int *lock_id, long *ns, int *info) {
     return;
   }
 
-  *info = pthread_rwlock_timedwrlock((pthread_rwlock_t*)(rwlocks->data[*lock_id]),
-                                 &t);
+  *info = pthread_rwlock_timedwrlock((pthread_rwlock_t*)(rwlocks->data[*lock_id]),&t);
 
 }
-
 
 
 

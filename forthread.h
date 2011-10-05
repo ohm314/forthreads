@@ -1,11 +1,13 @@
 #ifndef FORT_PTHREAD_H_
 #define FORT_PTHREAD_H_
 
-#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
+//#ifdef __LINUX
+#include <pthread.h>
+//#endif //__LINUX
 
 
 void forthread_init(int *info);
@@ -41,7 +43,21 @@ void forthread_atfork(void (*prepare)(void),
                       void (*parent)(void), 
                       void (*child)(void), int *info);
 
+// cannot be implemented using pthreads
+// this should be done in fortran
+// TODO provide fortran implementation if possible
+void forthread_cleanup_pop(int *execute,
+                           int *info);
 
+// cannot be implemented using pthreads
+// this should be done in fortran
+// TODO provide fortran implementation if possible
+void forthread_cleanup_push(void *(*routine)(void *),
+                            void *arg, int* info);
+
+void forthread_getconcurrency(int *currlevel, int *info);
+
+void forthread_setconcurrency(int *newlevel, int *info);
 
 /*****************************************/
 /*             mutex routines            */

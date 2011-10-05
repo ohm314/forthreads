@@ -46,6 +46,11 @@ array_t *threads;
  **/
 array_t *thread_attrs;
 
+/**
+ * holds thread keys for storing thread specific data
+ **/
+array_t *thread_keys;
+
 /*
  * holds the mutex IDs
  **/

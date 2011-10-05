@@ -1,4 +1,4 @@
-#include "../fort_pthread.c"
+#include "forthread.h"
 #include <stdio.h>
 #include <stdlib.h>
 
