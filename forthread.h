@@ -59,6 +59,23 @@ void forthread_getconcurrency(int *currlevel, int *info);
 
 void forthread_setconcurrency(int *newlevel, int *info);
 
+void forthread_getcpuclockid(int *thread, int *clock_id, int *info);
+void forthread_getschedparam(int *thread, int *policy, struct sched_param *param, int *info);
+void forthread_setschedparam(int *thread, int *policy, struct sched_param *param, int *info);
+void forthread_setschedprio(int *thread, int *prio, int *info);
+
+/*****************************************/
+/*   storing private data in threads     */
+/*****************************************/
+
+void forthread_key_delete(int *key_id, int *info);
+
+void forthread_key_create(int *key_id,void (*destructor)(void *),int *info);
+
+void forthread_getspecific(int *key, void **value, int *info);
+
+void forthread_setspecific(int *key, void **value, int *info);
+
 /*****************************************/
 /*             mutex routines            */
 /*****************************************/

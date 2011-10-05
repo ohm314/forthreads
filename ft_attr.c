@@ -111,7 +111,7 @@ void forthread_attr_setdetachstate(int *attr, int *detachstate, int *info) {
 
 }
 
-void forthread_attr_getguardsize(int *attr, int *guardsize, int *info) {
+void forthread_attr_getguardsize(int *attr, size_t *guardsize, int *info) {
   *info = FT_OK;
 
   if (!is_initialized) {
@@ -126,13 +126,13 @@ void forthread_attr_getguardsize(int *attr, int *guardsize, int *info) {
     return;
   }
 
-  *info = pthread_attr_getguardsize((pthread_attr_t*)(thread_attrs->data[*attr]),(size_t*)guardsize);
+  *info = pthread_attr_getguardsize((pthread_attr_t*)(thread_attrs->data[*attr]),guardsize);
 
   pthread_mutex_unlock(&(thread_attrs->mutex));
 
 }
 
-void forthread_attr_setguardsize(int *attr, int *guardsize, int *info) {
+void forthread_attr_setguardsize(int *attr, size_t *guardsize, int *info) {
   *info = FT_OK;
 
   if (!is_initialized) {
@@ -147,7 +147,7 @@ void forthread_attr_setguardsize(int *attr, int *guardsize, int *info) {
     return;
   }
 
-  *info = pthread_attr_setguardsize((pthread_attr_t*)(thread_attrs->data[*attr]),(size_t)*guardsize);
+  *info = pthread_attr_setguardsize((pthread_attr_t*)(thread_attrs->data[*attr]),*guardsize);
 
   pthread_mutex_unlock(&(thread_attrs->mutex));
 
@@ -195,10 +195,8 @@ void forthread_attr_setinheritsched(int *attr, int *inheritsched, int *info) {
 
 }
 
-// implements pthreads getschedparam
-void forthread_attr_getschedpriority(int *attr, int *sched_priority, int *info) {
+void forthread_attr_getschedparam(int *attr, struct sched_param *param, int *info) {
   *info = FT_OK;
-  struct sched_param param;
 
   if (!is_initialized) {
     *info = FT_EINIT;
@@ -212,19 +210,15 @@ void forthread_attr_getschedpriority(int *attr, int *sched_priority, int *info) 
     return;
   }
 
-  *info = pthread_attr_getschedparam((pthread_attr_t*)(thread_attrs->data[*attr]),&param);
+  *info = pthread_attr_getschedparam((pthread_attr_t*)(thread_attrs->data[*attr]),param);
 
-  *sched_priority = param.sched_priority;
 
   pthread_mutex_unlock(&(thread_attrs->mutex));
 
 }
 
-// implements pthreads setschedparam
-void forthread_attr_setschedpriority(int *attr, int *sched_priority, int *info) {
+void forthread_attr_setschedparam(int *attr, struct sched_param *param, int *info) {
   *info = FT_OK;
-  struct sched_param param;
-  param.sched_priority = *sched_priority;
 
   if (!is_initialized) {
     *info = FT_EINIT;
@@ -238,7 +232,7 @@ void forthread_attr_setschedpriority(int *attr, int *sched_priority, int *info) 
     return;
   }
 
-  *info = pthread_attr_setschedparam((pthread_attr_t*)(thread_attrs->data[*attr]),&param);
+  *info = pthread_attr_setschedparam((pthread_attr_t*)(thread_attrs->data[*attr]),param);
 
   pthread_mutex_unlock(&(thread_attrs->mutex));
 
@@ -328,7 +322,7 @@ void forthread_attr_setscope(int *attr, int *scope, int *info) {
 
 }
 
-void forthread_attr_getstacksize(int *attr, int *stacksize, int *info) {
+void forthread_attr_getstacksize(int *attr, size_t *stacksize, int *info) {
   *info = FT_OK;
 
   if (!is_initialized) {
@@ -343,13 +337,13 @@ void forthread_attr_getstacksize(int *attr, int *stacksize, int *info) {
     return;
   }
 
-  *info = pthread_attr_getstacksize((pthread_attr_t*)(thread_attrs->data[*attr]),(size_t*)stacksize);
+  *info = pthread_attr_getstacksize((pthread_attr_t*)(thread_attrs->data[*attr]),stacksize);
 
   pthread_mutex_unlock(&(thread_attrs->mutex));
 
 }
 
-void forthread_attr_setstacksize(int *attr, int *stacksize, int *info) {
+void forthread_attr_setstacksize(int *attr, size_t *stacksize, int *info) {
   *info = FT_OK;
 
   if (!is_initialized) {
@@ -364,7 +358,7 @@ void forthread_attr_setstacksize(int *attr, int *stacksize, int *info) {
     return;
   }
 
-  *info = pthread_attr_setstacksize((pthread_attr_t*)(thread_attrs->data[*attr]),(size_t)*stacksize);
+  *info = pthread_attr_setstacksize((pthread_attr_t*)(thread_attrs->data[*attr]),*stacksize);
 
   pthread_mutex_unlock(&(thread_attrs->mutex));
 

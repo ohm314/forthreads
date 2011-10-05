@@ -300,9 +300,9 @@ void forthread_getcpuclockid(int *thread, int *clock_id, int *info) {
 }
 
 // implements pthread_getschedparam
-void forthread_getschedpriority(int *thread, int *policy, int *sched_priority, int *info) {
+void forthread_getschedparam(int *thread, int *policy, struct sched_param *param, int *info) {
   *info = FT_OK;
-  struct sched_param param;
+  ;
 
   if (!is_initialized) {
     *info = FT_EINIT;
@@ -316,19 +316,15 @@ void forthread_getschedpriority(int *thread, int *policy, int *sched_priority, i
     return;
   }
 
-  *info = pthread_getschedparam(*((pthread_t*)(threads->data[*thread])),policy,&param);
-
-  *sched_priority = param.sched_priority;
+  *info = pthread_getschedparam(*((pthread_t*)(threads->data[*thread])),policy,param);
 
   pthread_mutex_unlock(&(threads->mutex));
 
 }
 
 // implements pthreads setschedparam
-void forthread_setschedpriority(int *thread, int *policy, int *sched_priority, int *info) {
+void forthread_setschedparam(int *thread, int *policy, struct sched_param *param, int *info) {
   *info = FT_OK;
-  struct sched_param param;
-  param.sched_priority = *sched_priority;
 
   if (!is_initialized) {
     *info = FT_EINIT;
@@ -342,7 +338,28 @@ void forthread_setschedpriority(int *thread, int *policy, int *sched_priority, i
     return;
   }
 
-  *info = pthread_setschedparam(*((pthread_t*)(threads->data[*thread])),*policy,&param);
+  *info = pthread_setschedparam(*((pthread_t*)(threads->data[*thread])),*policy,param);
+
+  pthread_mutex_unlock(&(threads->mutex));
+
+}
+
+void forthread_setschedprio(int *thread, int *prio, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(threads->mutex));
+  if (!is_valid(threads,*thread)) {
+    pthread_mutex_unlock(&(threads->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_setschedprio(*((pthread_t*)(threads->data[*thread])),*prio);
 
   pthread_mutex_unlock(&(threads->mutex));
 
@@ -402,6 +419,54 @@ void forthread_key_create(int *key_id,void (*destructor)(void *),int *info) {
   pthread_mutex_unlock(&(thread_keys->mutex));
 
 }
+
+// the void pointer probably wont work
+void forthread_getspecific(int *key, void **value, int *info) {
+
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(thread_keys->mutex));
+
+  if (!is_valid(thread_keys,*key)) {
+    pthread_mutex_unlock(&(thread_keys->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *value = pthread_getspecific(*((pthread_key_t*)(thread_keys->data[*key])));
+
+  pthread_mutex_unlock(&(thread_keys->mutex));
+}
+
+// the void pointer probably wont work
+void forthread_setspecific(int *key, void **value, int *info) {
+
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(thread_keys->mutex));
+
+  if (!is_valid(thread_keys,*key)) {
+    pthread_mutex_unlock(&(thread_keys->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_setspecific(*((pthread_key_t*)(thread_keys->data[*key])),
+                              *value);
+
+  pthread_mutex_unlock(&(thread_keys->mutex));
+}
+
 
 /*****************************************/
 /*             mutex routines            */

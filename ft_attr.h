@@ -35,19 +35,17 @@ void forthread_attr_getdetachstate(int *attr, int *detachstate, int *info);
 
 void forthread_attr_setdetachstate(int *attr, int *detachstate, int *info);
 
-void forthread_attr_getguardsize(int *attr, int *guardsize, int *info);
+void forthread_attr_getguardsize(int *attr, size_t *guardsize, int *info);
 
-void forthread_attr_setguardsize(int *attr, int *guardsize, int *info);
+void forthread_attr_setguardsize(int *attr, size_t *guardsize, int *info);
 
 void forthread_attr_getinheritsched(int *attr, int *inheritsched, int *info);
 
 void forthread_attr_setinheritsched(int *attr, int *inheritsched, int *info);
 
-// implements pthreads getschedparam
-void forthread_attr_getschedpriority(int *attr, int *sched_priority, int *info);
+void forthread_attr_getschedparam(int *attr, struct sched_param *param, int *info);
 
-// implements pthreads setschedparam
-void forthread_attr_setschedpriority(int *attr, int *sched_priority, int *info);
+void forthread_attr_setschedparam(int *attr, struct sched_param *param, int *info);
 
 void forthread_attr_getschedpolicy(int *attr, int *policy, int *info);
 
@@ -57,9 +55,9 @@ void forthread_attr_getscope(int *attr, int *scope, int *info);
 
 void forthread_attr_setscope(int *attr, int *scope, int *info);
 
-void forthread_attr_getstacksize(int *attr, int *stacksize, int *info);
+void forthread_attr_getstacksize(int *attr, size_t *stacksize, int *info);
 
-void forthread_attr_setstacksize(int *attr, int *stacksize, int *info);
+void forthread_attr_setstacksize(int *attr, size_t *stacksize, int *info);
   
 /*****************************************/
 /*       mutex attribute routines        */
