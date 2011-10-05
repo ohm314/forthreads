@@ -4,10 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
-//#ifdef __LINUX
+#include <signal.h>
 #include <pthread.h>
-//#endif //__LINUX
 
 
 void forthread_init(int *info);
@@ -33,6 +31,8 @@ void forthread_exit(void *value_ptr);
 void forthread_join(int *thread_id, void **value_ptr, int *info);
 
 void forthread_cancel(int *thread_id, int *info);
+
+void forthread_kill(int *thread_id, int *sig, int *info);
 
 void forthread_once(int *once_ctrl_id, void (*routine)(void), int *info);
 
@@ -64,6 +64,10 @@ void forthread_getschedparam(int *thread, int *policy, struct sched_param *param
 void forthread_setschedparam(int *thread, int *policy, struct sched_param *param, int *info);
 void forthread_setschedprio(int *thread, int *prio, int *info);
 
+void forthread_setcancelstate(int *state, int *oldstate, int *info);
+void forthread_setcanceltype(int *type, int *oldtype, int *info);
+
+  
 /*****************************************/
 /*   storing private data in threads     */
 /*****************************************/
@@ -93,6 +97,10 @@ void forthread_trylock(int *mutex_id, int *info);
 void forthread_mutex_unlock(int *mutex_id, int *info);
 
 
+void forthread_mutex_getprioceiling(int *mutex, int *prioceiling, int *info);
+void forthread_mutex_setprioceiling(int *mutex, int *prioceiling, int *old_ceiling, int *info);
+
+void forthread_mutex_timedlock(int *mutex, struct timespec *abs_timeout, int *info);
 
 /*****************************************/
 /*    condition variable routines        */

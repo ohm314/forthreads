@@ -193,6 +193,38 @@ void forthread_cancel(int *thread_id, int *info) {
 
 }
 
+void forthread_testcancel(int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+
+  pthread_testcancel();
+
+}
+
+
+void forthread_kill(int *thread_id, int *sig, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  if (!is_valid(threads,*thread_id)) {
+    *info = FT_EINVALID;
+    return;
+  }
+  
+  *info = pthread_kill(*((pthread_t*)(threads->data[*thread_id])),*sig);
+
+}
+
+
 void forthread_once(int *once_ctrl_id, void (*routine)(void), int *info) {
   *info = FT_OK;
 
@@ -362,6 +394,30 @@ void forthread_setschedprio(int *thread, int *prio, int *info) {
   *info = pthread_setschedprio(*((pthread_t*)(threads->data[*thread])),*prio);
 
   pthread_mutex_unlock(&(threads->mutex));
+
+}
+
+void forthread_setcancelstate(int *state, int *oldstate, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  *info = pthread_setcancelstate(*state,oldstate);
+
+}
+
+void forthread_setcanceltype(int *type, int *oldtype, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  *info = pthread_setcanceltype(*type,oldtype);
 
 }
 
@@ -597,6 +653,71 @@ void forthread_mutex_unlock(int *mutex_id, int *info) {
 
 }
 
+void forthread_mutex_getprioceiling(int *mutex, int *prioceiling, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(mutexes->mutex));
+  if (!is_valid(mutexes,*mutex)) {
+    pthread_mutex_unlock(&(mutexes->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_mutex_getprioceiling(
+                 (pthread_mutex_t*)(mutexes->data[*mutex]),
+                 prioceiling);
+
+  pthread_mutex_unlock(&(mutexes->mutex));
+
+}
+
+void forthread_mutex_setprioceiling(int *mutex, int *prioceiling, int *old_ceiling, int *info) {
+  *info = FT_OK;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+
+  pthread_mutex_lock(&(mutexes->mutex));
+  if (!is_valid(mutexes,*mutex)) {
+    pthread_mutex_unlock(&(mutexes->mutex));
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_mutex_setprioceiling(
+                 (pthread_mutex_t*)(mutexes->data[*mutex]),
+                 *prioceiling,old_ceiling);
+
+  pthread_mutex_unlock(&(mutexes->mutex));
+
+}
+
+// TODO see what we can do with timespec
+void forthread_mutex_timedlock(int *mutex, struct timespec *abs_timeout, int *info) {
+  *info = FT_OK;
+
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+  
+  if (!is_valid(mutexes,*mutex)) {
+    *info = FT_EINVALID;
+    return;
+  }
+
+  *info = pthread_mutex_timedlock((pthread_mutex_t*)(mutexes->data[*mutex]),
+                                 abs_timeout);
+
+}
 
 
 /*****************************************/
