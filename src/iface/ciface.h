@@ -17,10 +17,9 @@ interface
 end interface
 
 abstract interface
-    function start_routine(arg) bind(c)
+    type(c_ptr) function start_routine(arg) bind(c)
     use iso_c_binding
     type(c_ptr), value, intent(in)  :: arg
-    type(c_ptr),        intent(out) :: start_routine
     end function start_routine
 end interface
 
@@ -30,6 +29,7 @@ interface
     integer(c_int), intent(out)      :: thread_id
     integer(c_int), intent(in)       :: attr_id
     type(c_funptr), intent(in)       :: start_routine
+    type(c_ptr), value, intent(in)   :: arg
     integer(c_int), intent(out)      :: info
     end subroutine thread_create
 end interface
