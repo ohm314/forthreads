@@ -17,10 +17,10 @@ interface
 end interface
 
 abstract interface
-    type(c_ptr) function start_routine(arg) bind(c)
+    type(c_ptr) function i_start_routine(arg) bind(c)
     use iso_c_binding
     type(c_ptr), value, intent(in)  :: arg
-    end function start_routine
+    end function i_start_routine
 end interface
 
 interface
@@ -54,15 +54,15 @@ end interface
 interface
     subroutine thread_exit(value_ptr) bind(c)
     use iso_c_binding
-    type(c_ptr),        intent(out)  :: value_ptr
+    type(c_ptr),      intent(out)    :: value_ptr
     end subroutine thread_exit
 end interface
 
 interface
     subroutine thread_join(thread_id,value_ptr,info) bind(c)
     use iso_c_binding
-    integer(c_int), intent(in)   :: thread_id
-    type(c_ptr),    intent(out)  :: value_ptr
-    integer(c_int), intent(out)      :: info
+    integer(c_int), intent(in)      :: thread_id
+    type(c_ptr),    intent(out)     :: value_ptr
+    integer(c_int), intent(out)     :: info
     end subroutine thread_join
 end interface
