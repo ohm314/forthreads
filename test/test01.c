@@ -13,7 +13,9 @@ int main(int argc, char** argv) {
     int aid = -1;
     int info = 0;
     int i = 0;
+    void *(*routine)(void*) = &run;
 
+    printf("====================== test01 ======================\n");
     printf("Initializing fort_threads\n");
     
     thread_init(&info);
@@ -21,7 +23,7 @@ int main(int argc, char** argv) {
     printf("creating a thread\n");
     for (i = 0; i < 10;i++) {
         arg[i] = i;
-        thread_create(&tid[i],&aid,&run,&arg[i],&info);
+        thread_create(&tid[i],&aid,&routine,&arg[i],&info);
         if (info) {
             printf("error %d\n",info);
         }
@@ -35,6 +37,7 @@ int main(int argc, char** argv) {
             printf("error %d\n",info);
         }
     }
+    printf("==================== end test01 ====================\n");
     return 0;
 }
 

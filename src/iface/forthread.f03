@@ -31,9 +31,8 @@ include 'ciface.h'
 integer, intent(inout)              :: thread_id
 integer, intent(in)                 :: attr_id
 procedure(i_start_routine), pointer :: start_routine
-integer                   , pointer :: arg
+integer                   , target  :: arg
 integer, intent(out)                :: info
-
 
 call thread_create(thread_id,attr_id,c_funloc(start_routine),c_loc(arg),info)
 end subroutine

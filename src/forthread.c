@@ -9,7 +9,6 @@
 #include "forthread.h"
 
 
-
 void thread_init(int *info) {
   int i = 0;
   pthread_t stid;
@@ -68,7 +67,7 @@ void thread_destroy(int* info) {
 
 
 void thread_create(int *thread_id, int *attr_id,
-    void *(*start_routine)(void *), void *arg, int* info) {
+    void *(**start_routine)(void *), void *arg, int* info) {
   int i = 0;
   pthread_attr_t *attr;
   *info = FT_OK;
@@ -77,7 +76,7 @@ void thread_create(int *thread_id, int *attr_id,
     *info = FT_EINIT;
     return;
   }
-
+  
   pthread_mutex_lock(&(threads->mutex));
   if (threads->after == threads->size) {
     // we exhausted the thread id and attribute arrays, double space
@@ -93,7 +92,7 @@ void thread_create(int *thread_id, int *attr_id,
     attr = thread_attrs->data[*attr_id];
   }
 
-  *info = pthread_create(threads->data[threads->after], attr, start_routine, arg);
+  *info = pthread_create(threads->data[threads->after], attr, (*start_routine), arg);
 
   if (*attr_id == -1)
     free(attr);

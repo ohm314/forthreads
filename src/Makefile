@@ -1,7 +1,3 @@
-#CC = icc
-#CC = gcc
-CC = clang
-FC = gfortran
 # see /usr/include/features.h (on linux) for different possibilites
 # _XOPEN_SOURCE >= 700 means SUSv4 (revision 7).
 # This is needed to be compliant with the POSIX.1-2001 standard.
@@ -10,22 +6,23 @@ FC = gfortran
 # might have to be treated differently.
 DEFINES = -D_XOPEN_SOURCE=700
 CFLAGS = -fPIC -Wimplicit-function-declaration
-#CDEBUG = -g -traceback
 LDFLAGS = -shared -pthread
 
 TARGET  = libforthread.so
 SOURCES := $(wildcard *.c)
+IFACE_SOURCES := $(wildcard iface/*.f03) $(wildcard iface/*.h)
 OBJECTS := $(patsubst %.c,%.o,$(SOURCES)) iface/forthread.o
 all: $(TARGET)
 
 $(TARGET):  $(OBJECTS)
 	$(FC) -o $@ $(LDFLAGS) $^
 
-iface/forthread.o:
+iface/forthread.o: $(IFACE_SOURCES)
 	$(MAKE) -C iface
 
 %.o: %.c
 	$(CC) $(DEFINES) $(CFLAGS) $(CDEBUG) -c $< -o $@
 
 clean:
-	rm -f *.o 
+	rm -f *.o $(TARGET)
+	$(MAKE) -C iface clean

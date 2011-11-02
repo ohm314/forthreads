@@ -1,10 +1,5 @@
-#CC = icc
-#CC = gcc
-CC = clang
-FC = gfortran
-#CDEBUG = -g -traceback
 LDFLAGS = -L../src/ -lforthread
-
+LD_LIBRARY_PATH=$${LD_LIBRARY_PATH}:../src/
 CSOURCES := $(wildcard *.c)
 FSOURCES := $(wildcard *.f03)
 CTARGETS := $(patsubst %.c,%,$(CSOURCES))

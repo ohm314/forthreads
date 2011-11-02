@@ -17,7 +17,7 @@ void thread_destroy(int* info);
 
 
 void thread_create(int *thread_id, int *attr_id,
-                      void *(*start_routine)(void *),
+                      void *(**start_routine)(void *),
                       void *arg, int* info);
 
 void thread_detach(int *thread_id, int *info);
