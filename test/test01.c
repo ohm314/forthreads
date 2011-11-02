@@ -1,9 +1,10 @@
-#include "forthread.h"
+#include "../src/forthread.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 void *run(void *arg) {
     printf("Hello World! %d\n",*(int*)arg);
+    return NULL;
 }
 
 int main(int argc, char** argv) {
@@ -15,12 +16,12 @@ int main(int argc, char** argv) {
 
     printf("Initializing fort_threads\n");
     
-    forthread_init(&info);
+    thread_init(&info);
 
     printf("creating a thread\n");
     for (i = 0; i < 10;i++) {
         arg[i] = i;
-        forthread_create(&tid[i],&aid,&run,&arg[i],&info);
+        thread_create(&tid[i],&aid,&run,&arg[i],&info);
         if (info) {
             printf("error %d\n",info);
         }
@@ -29,7 +30,7 @@ int main(int argc, char** argv) {
 
     for (i = 0; i < 10; i++) {
         printf("join thread %d\n",tid[i]);
-        forthread_join(&tid[i],NULL,&info);
+        thread_join(&tid[i],NULL,&info);
         if (info) {
             printf("error %d\n",info);
         }
