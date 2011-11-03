@@ -1,22 +1,29 @@
+module procmod
+contains
+    subroutine example()
+    implicit none
+
+    print *,'hello world'
+
+    end subroutine example
+end module procmod
+
 program test01
 
-include '../src/iface/ciface.h'
+use procmod
+
+!include '../src/iface/ciface.h'
 
 integer, parameter       :: n = 10
 integer, dimension(n)    :: tid
-integer                  :: arg
+integer, dimension(n)    :: arg
 integer                  :: ret_val
 integer                  :: thread_id
 integer                  :: aid
 integer                  :: i
 integer                  :: info
 
-procedure(i_start_routine), bind(c), pointer :: runp
-
-runp => run
-
 aid = -1
-
 print *, '====================== test02 ======================'
 print *,'initializing threads'
 
@@ -26,8 +33,8 @@ if (info.ne.0) then
 endif
 
 do i=1,n
-  arg = i**2
-  call forthread_create(thread_id,aid,runp,arg,info)
+  arg(i) = i**2
+  call forthread_create(thread_id,aid,example2,arg(i),info)
   tid(i) = thread_id
   if (info.ne.0) then
     print *,'error creating thread ',i
@@ -53,16 +60,12 @@ print *, '==================== end test02 ===================='
 
 contains
 
+    subroutine example2(arg)
+    implicit none
+    integer :: arg
 
-    type(c_ptr) function run(arg) bind(c)
-    use iso_c_binding
-    type(c_ptr), value, intent(in)  :: arg
+    print *,'hello world ',arg
 
-    integer, pointer :: val
-
-    call c_f_pointer(arg,val)
-    print *,'hello world',val
-
-    end function run
+    end subroutine example2
 
 end program test01

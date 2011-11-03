@@ -65,6 +65,26 @@ void thread_destroy(int* info) {
 /*         Thread routines               */
 /*****************************************/
 
+void thread_alloc(int *thread_id, int *info) {
+  
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+  
+  pthread_mutex_lock(&(threads->mutex));
+  if (threads->after == threads->size) {
+    // we exhausted the thread id array, double space
+    array_resize(&threads,threads->size*2);
+  }
+  threads->data[threads->after] = (pthread_t*) malloc(sizeof(pthread_t));
+  
+  *thread_id = threads->after;
+  threads->after++;
+
+  pthread_mutex_unlock(&(threads->mutex));
+
+}
 
 void thread_create(int *thread_id, int *attr_id,
     void *(**start_routine)(void *), void *arg, int* info) {
@@ -77,23 +97,30 @@ void thread_create(int *thread_id, int *attr_id,
     return;
   }
   
-  pthread_mutex_lock(&(threads->mutex));
-  if (threads->after == threads->size) {
-    // we exhausted the thread id and attribute arrays, double space
-    array_resize(&threads,threads->size*2);
+  if (!is_valid(threads,*thread_id)) {
+    *info = FT_EINVALID;
+    return;
   }
-  threads->data[threads->after] = (pthread_t*) malloc(sizeof(pthread_t));
+  
+  pthread_mutex_lock(&(threads->mutex));
 
   if (*attr_id == -1) {
+    // TODO: set to NULL
     attr = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
     pthread_attr_init(attr);
     pthread_attr_setdetachstate(attr, PTHREAD_CREATE_JOINABLE);
   } else {
+    if (!is_valid(thread_attrs,*attr_id)) {
+      pthread_mutex_unlock(&(threads->mutex));
+      *info = FT_EINVALID;
+      return;
+    }
     attr = thread_attrs->data[*attr_id];
   }
 
-  *info = pthread_create(threads->data[threads->after], attr, (*start_routine), arg);
+  *info = pthread_create(threads->data[*thread_id], attr, (*start_routine), arg);
 
+  // TODO remove
   if (*attr_id == -1)
     free(attr);
 
@@ -101,10 +128,6 @@ void thread_create(int *thread_id, int *attr_id,
     pthread_mutex_unlock(&(threads->mutex));
     return;
   }
-
-  *thread_id = threads->after;
-  threads->after++;
-
 
   pthread_mutex_unlock(&(threads->mutex));
 

@@ -15,7 +15,7 @@ OBJECTS := $(patsubst %.c,%.o,$(SOURCES)) iface/forthread.o
 all: $(TARGET)
 
 $(TARGET):  $(OBJECTS)
-	$(FC) -o $@ $(LDFLAGS) $^
+	$(FC) -o $@ $(DEBUG) $(LDFLAGS) $^
 
 iface/forthread.o: $(IFACE_SOURCES)
 	$(MAKE) -C iface

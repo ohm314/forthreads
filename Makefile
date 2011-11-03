@@ -3,8 +3,9 @@
 CC = clang
 #FC = ifort
 FC = gfortran
-CDEBUG =  -g
-FDEBUG = -g -fbacktrace
+DEBUG = -g
+CDEBUG = $(DEBUG) 
+FDEBUG = $(DEBUG) -fbacktrace
 
 export
 

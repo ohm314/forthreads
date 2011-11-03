@@ -139,4 +139,5 @@ int is_valid(array_t *arr, int id);
 // varray version
 int vis_valid(varray_t *arr, int id);
 
+
 #endif //FT_DATA_H_
