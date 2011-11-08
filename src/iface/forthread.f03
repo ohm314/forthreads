@@ -1,13 +1,20 @@
 
 
 subroutine forthread_init(info)
+
+use forthread_data
 implicit none
 
 include 'ciface.h'
 
 integer, intent(out) :: info
 
+allocate(routine_table(init_size))
+routine_table_size = init_size
+
 call thread_init(info)
+
+call thread_mutex_init(routine_table_mutex,-1,info)
 
 end subroutine
 
@@ -23,50 +30,47 @@ call thread_destroy(info)
 end subroutine
 
 
-subroutine forthread_create(thread_id,attr_id,start_routine,arg,info)
+subroutine forthread_create(thread_id,attr_id,run,arg,info)
 
 use iso_c_binding
+use forthread_data
 implicit none
 
 include 'ciface.h'
 
 integer, intent(out)                :: thread_id
 integer, intent(in)                 :: attr_id
-procedure(i_run)                    :: start_routine
+procedure(i_run)                    :: run !type i_run
 integer                   , target  :: arg
 integer, intent(out)                :: info
 
-type(t_run), dimension(:), pointer,save :: routine_table => NULL()
-procedure(i_start_routine), bind(c), pointer :: runp
-
-if (.not.associated(routine_table)) then
-    allocate(routine_table(100))
-endif
+integer                                      :: i
+procedure(i_start_routine), bind(c), pointer :: start_routinep
+type(t_run), pointer :: runp
+call thread_mutex_lock(routine_table_mutex,info)
 
 call thread_alloc(thread_id,info)
-routine_table(thread_id)%run => start_routine
-routine_table(thread_id)%runarg => arg
-runp => run
+if (thread_id.gt.routine_table_size) then
+   nullify(tmp)
+   allocate(tmp(routine_table_size*2))
+   do i=1,routine_table_size
+       tmp(i) = routine_table(i)
+   enddo
+   deallocate(routine_table)
+   routine_table => tmp
+   routine_table_size = routine_table_size*2
+endif
+print *,'thread_id',thread_id
+allocate(routine_table(thread_id)%t)
+routine_table(thread_id)%t%run => run
+routine_table(thread_id)%t%arg => arg
+start_routinep => start_routine
 
-call thread_create(thread_id,attr_id,c_funloc(runp),&
-                   c_loc(routine_table(thread_id)),info)
-contains
+call thread_create(thread_id,attr_id,c_funloc(start_routinep),&
+                   c_loc(routine_table(thread_id)%t),info)
 
-    type(c_ptr) function run(arg) bind(c)
-    use iso_c_binding
-    implicit none
+call thread_mutex_unlock(routine_table_mutex,info)
 
-    include 'ciface.h'
-
-    type(c_ptr), value, intent(in)  :: arg
-
-    type(t_run), pointer :: exec
-    integer      :: ret
-
-    call c_f_pointer(arg,exec)
-    call exec%run(exec%runarg)
-
-    end function run
 
 end subroutine
     

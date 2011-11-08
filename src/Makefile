@@ -5,23 +5,25 @@
 # define is most probably only needed when compiling on linux, other systems
 # might have to be treated differently.
 DEFINES = -D_XOPEN_SOURCE=700
-CFLAGS = -fPIC -Wimplicit-function-declaration
 LDFLAGS = -shared -pthread
 
 TARGET  = libforthread.so
 SOURCES := $(wildcard *.c)
 IFACE_SOURCES := $(wildcard iface/*.f03) $(wildcard iface/*.h)
-OBJECTS := $(patsubst %.c,%.o,$(SOURCES)) iface/forthread.o
+OBJECTS := $(patsubst %.c,%.o,$(SOURCES)) iface/forthread.o iface/forthread_data.o
 all: $(TARGET)
 
 $(TARGET):  $(OBJECTS)
 	$(FC) -o $@ $(DEBUG) $(LDFLAGS) $^
 
 iface/forthread.o: $(IFACE_SOURCES)
-	$(MAKE) -C iface
+	$(MAKE) -C iface forthread.o
 
 %.o: %.c
 	$(CC) $(DEFINES) $(CFLAGS) $(CDEBUG) -c $< -o $@
+
+%.o: %.mod
+	true
 
 clean:
 	rm -f *.o $(TARGET)

@@ -20,22 +20,14 @@ interface
 end interface
 
 abstract interface
-    type(c_ptr) function i_start_routine(arg) bind(c)
+    function i_start_routine(arg) bind(c)
     use iso_c_binding
+    type(c_ptr)                     :: i_start_routine
     type(c_ptr), value, intent(in)  :: arg
     end function i_start_routine
 end interface
 
-abstract interface
-    subroutine i_run(arg)
-    integer :: arg
-    end subroutine i_run
-end interface
 
-type t_run
-    procedure(i_run), pointer, nopass :: run
-    integer, pointer :: runarg
-end type t_run
 
 interface
     subroutine thread_alloc(thread_id,info) bind(c)
@@ -89,4 +81,40 @@ interface
     end subroutine thread_join
 end interface
 
+!*****************************************!
+!*             mutex routines            *!
+!*****************************************!
+
+interface
+    subroutine thread_mutex_init(mutex_id,attr_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: mutex_id
+    integer(c_int), intent(in)      :: attr_id
+    integer(c_int), intent(out)     :: info
+    end subroutine
+end interface
+
+interface
+    subroutine thread_mutex_lock(mutex_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: mutex_id
+    integer(c_int), intent(out)     :: info
+    end subroutine
+end interface
+
+interface
+    subroutine thread_mutex_trylock(mutex_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: mutex_id
+    integer(c_int), intent(out)     :: info
+    end subroutine
+end interface
+
+interface
+    subroutine thread_mutex_unlock(mutex_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: mutex_id
+    integer(c_int), intent(out)     :: info
+    end subroutine
+end interface
 

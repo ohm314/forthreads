@@ -23,6 +23,7 @@ int main(int argc, char** argv) {
     printf("creating a thread\n");
     for (i = 0; i < 10;i++) {
         arg[i] = i;
+        thread_alloc(&tid[i],&info);
         thread_create(&tid[i],&aid,&routine,&arg[i],&info);
         if (info) {
             printf("error %d\n",info);

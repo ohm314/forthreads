@@ -91,9 +91,9 @@ void thread_mutex_destroy(int *mutex_id, int *info);
 
 void thread_mutex_init(int *mutex_id, int *attr_id, int *info);
 
-void thread_lock(int *mutex_id, int *info);
+void thread_mutex_lock(int *mutex_id, int *info);
 
-void thread_trylock(int *mutex_id, int *info);
+void thread_mutex_trylock(int *mutex_id, int *info);
 
 void thread_mutex_unlock(int *mutex_id, int *info);
 

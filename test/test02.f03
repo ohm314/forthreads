@@ -2,8 +2,9 @@ module procmod
 contains
     subroutine example()
     implicit none
+    !integer :: arg
 
-    print *,'hello world'
+    print *,'hello world arrrg'
 
     end subroutine example
 end module procmod
@@ -34,7 +35,7 @@ endif
 
 do i=1,n
   arg(i) = i**2
-  call forthread_create(thread_id,aid,example2,arg(i),info)
+  call forthread_create(thread_id,aid,example,arg(i),info)
   tid(i) = thread_id
   if (info.ne.0) then
     print *,'error creating thread ',i
@@ -58,14 +59,5 @@ endif
 
 print *, '==================== end test02 ===================='
 
-contains
-
-    subroutine example2(arg)
-    implicit none
-    integer :: arg
-
-    print *,'hello world ',arg
-
-    end subroutine example2
 
 end program test01

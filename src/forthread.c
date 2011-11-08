@@ -623,7 +623,7 @@ void thread_mutex_init(int *mutex_id, int *attr_id, int *info) {
 
 }
 
-void thread_lock(int *mutex_id, int *info) {
+void thread_mutex_lock(int *mutex_id, int *info) {
   *info = FT_OK;
 
   if (!is_initialized) {
@@ -640,7 +640,7 @@ void thread_lock(int *mutex_id, int *info) {
 
 }
 
-void thread_trylock(int *mutex_id, int *info) {
+void thread_mutex_trylock(int *mutex_id, int *info) {
   *info = FT_OK;
 
   if (!is_initialized) {
