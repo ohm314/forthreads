@@ -5,14 +5,14 @@ FSOURCES := $(wildcard *.f03)
 CTARGETS := $(patsubst %.c,%,$(CSOURCES))
 FTARGETS := $(patsubst %.f03,%,$(FSOURCES))
 
-all: $(FTARGETS) $(CTARGETS)  
+all: $(CTARGETS) $(FTARGETS)
 
 %: %.c
 	$(CC) -o $@ $< $(CFLAGS) $(CDEBUG) $(LDFLAGS) 
 	./$@
 
 %: %.f03
-	$(FC) -o $@ -Tf$< $(FFLAGS) $(FDEBUG) $(LDFLAGS) 
+	$(FC) -o $@ $< $(FFLAGS) $(FDEBUG) $(LDFLAGS) 
 	./$@
 
 clean:

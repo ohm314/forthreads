@@ -1,10 +1,10 @@
 module procmod
 contains
-    subroutine example()
+    subroutine example(arg)
     implicit none
-    !integer :: arg
+    integer :: arg
 
-    print *,'hello world arrrg'
+    print *,'hello world',arg
 
     end subroutine example
 end module procmod

@@ -60,7 +60,6 @@ if (thread_id.gt.routine_table_size) then
    routine_table => tmp
    routine_table_size = routine_table_size*2
 endif
-print *,'thread_id',thread_id
 allocate(routine_table(thread_id)%t)
 routine_table(thread_id)%t%run => run
 routine_table(thread_id)%t%arg => arg

@@ -1,13 +1,14 @@
-CC = icc
+#CC = icc
 #CC = gcc
-#CC = clang
-FC = ifort
-#FC = gfortran
-CFLAGS = -fPIC
-#CFLAGS = -fPIC -Wimplicit-function-declaration
-DEBUG = -g -debug
-CDEBUG = $(DEBUG)  -I/usr/include/x86_64-linux-gnu/
-FDEBUG = $(DEBUG) -fPIC -traceback -C -FR -fpp -stand f03
+CC = clang
+#FC = ifort
+FC = gfortran
+#CFLAGS = -fPIC
+CFLAGS = -fPIC -Wimplicit-function-declaration
+DEBUG = -g
+#CDEBUG = $(DEBUG)  -I/usr/include/x86_64-linux-gnu/
+CDEBUG = $(DEBUG)  
+FDEBUG = $(DEBUG) -fPIC
 
 export
 
