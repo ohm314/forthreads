@@ -1,5 +1,4 @@
 FDEFINES =
-FFLAGS = -fPIC
 
 %.o: %.mod
 	true

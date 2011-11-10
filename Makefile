@@ -5,10 +5,11 @@ CC = clang
 FC = gfortran
 #CFLAGS = -fPIC
 CFLAGS = -fPIC -Wimplicit-function-declaration
+FFLAGS = -fPIC -frecursive
 DEBUG = -g
 #CDEBUG = $(DEBUG)  -I/usr/include/x86_64-linux-gnu/
 CDEBUG = $(DEBUG)  
-FDEBUG = $(DEBUG) -fPIC
+FDEBUG = $(DEBUG)
 
 export
 
