@@ -816,13 +816,8 @@ void thread_cond_init(int *cond_id, int *attr_id, int *info) {
 
 }
 
-void thread_cond_timedwait(int *cond_id, int *mutex_id, long *ns, int *info) {
-  struct timespec t;
+void thread_cond_timedwait(int *cond_id, int *mutex_id, struct timespec *abstime, int *info) {
   *info = FT_OK;
-
-  // TODO: check if ns > 10^6 is allowed
-  t.tv_sec = 0;
-  t.tv_nsec = *ns;
 
   if (!is_initialized) {
     *info = FT_EINIT;
@@ -836,7 +831,7 @@ void thread_cond_timedwait(int *cond_id, int *mutex_id, long *ns, int *info) {
 
   *info = pthread_cond_timedwait((pthread_cond_t*)(conds->data[*cond_id]),
                                  (pthread_mutex_t*)(mutexes->data[*mutex_id]),
-                                 &t);
+                                 abstime);
 
 }
 
@@ -1287,13 +1282,9 @@ void thread_rwlock_unlock(int *lock_id, int *info) {
 }
 
 
-void thread_rwlock_timedrdlock(int *lock_id, long *ns, int *info) {
-  struct timespec t;
+void thread_rwlock_timedrdlock(int *lock_id, struct timespec *abs_timeout, int *info) {
   *info = FT_OK;
 
-  // TODO: check if ns > 10^6 is allowed
-  t.tv_sec = 0;
-  t.tv_nsec = *ns;
 
   if (!is_initialized) {
     *info = FT_EINIT;
@@ -1306,17 +1297,13 @@ void thread_rwlock_timedrdlock(int *lock_id, long *ns, int *info) {
   }
   
   *info = pthread_rwlock_timedrdlock((pthread_rwlock_t*)(rwlocks->data[*lock_id]),
-                                 &t);
+                                 abs_timeout);
 
 }
 
-void thread_rwlock_timedwrlock(int *lock_id, long *ns, int *info) {
-  struct timespec t;
+void thread_rwlock_timedwrlock(int *lock_id, struct timespec *abs_timeout, int *info) {
   *info = FT_OK;
 
-  // TODO: check if ns > 10^6 is allowed
-  t.tv_sec = 0;
-  t.tv_nsec = *ns;
 
   if (!is_initialized) {
     *info = FT_EINIT;
@@ -1328,7 +1315,8 @@ void thread_rwlock_timedwrlock(int *lock_id, long *ns, int *info) {
     return;
   }
 
-  *info = pthread_rwlock_timedwrlock((pthread_rwlock_t*)(rwlocks->data[*lock_id]),&t);
+  *info = pthread_rwlock_timedwrlock((pthread_rwlock_t*)(rwlocks->data[*lock_id]),
+                                 abs_timeout);
 
 }
 

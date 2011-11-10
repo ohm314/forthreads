@@ -87,8 +87,6 @@ void thread_setspecific(int *key, void **value, int *info);
 
 void thread_mutex_destroy(int *mutex_id, int *info);
 
-
-
 void thread_mutex_init(int *mutex_id, int *attr_id, int *info);
 
 void thread_mutex_lock(int *mutex_id, int *info);
@@ -97,8 +95,8 @@ void thread_mutex_trylock(int *mutex_id, int *info);
 
 void thread_mutex_unlock(int *mutex_id, int *info);
 
-
 void thread_mutex_getprioceiling(int *mutex, int *prioceiling, int *info);
+
 void thread_mutex_setprioceiling(int *mutex, int *prioceiling, int *old_ceiling, int *info);
 
 void thread_mutex_timedlock(int *mutex, struct timespec *abs_timeout, int *info);
@@ -110,17 +108,13 @@ void thread_mutex_timedlock(int *mutex, struct timespec *abs_timeout, int *info)
 
 void thread_cond_destroy(int *cond_id, int *info);
 
-
 void thread_cond_init(int *cond_id, int *attr_id, int *info);
 
-void thread_cond_timedwait(int *cond_id, int *mutex_id, long *ns, int *info);
-
+void thread_cond_timedwait(int *cond_id, int *mutex_id, struct timespec *abstime, int *info);
 
 void thread_cond_wait(int *cond_id, int *mutex_id, int *info);
 
-
 void thread_cond_broadcast(int *cond_id, int *info);
-
 
 void thread_cond_signal(int *cond_id, int *info);
 
@@ -156,7 +150,7 @@ void thread_spin_trylock(int *lock_id, int *info);
 void thread_spin_unlock(int *lock_id, int *info);
 
 /*************************************/
-/*    rwlock variable routines         */
+/*    rwlock variable routines       */
 /*************************************/
 
 
@@ -164,11 +158,9 @@ void thread_rwlock_destroy(int *rwlock_id, int *info);
 
 void thread_rwlock_init(int *rwlock_id, int *attr_id, int *info);
 
-
 void thread_rwlock_rdlock(int *lock_id, int *info);
 
 void thread_rwlock_tryrdlock(int *lock_id, int *info);
-
 
 void thread_rwlock_wrlock(int *lock_id, int *info);
 
@@ -176,10 +168,9 @@ void thread_rwlock_trywrlock(int *lock_id, int *info);
 
 void thread_rwlock_unlock(int *lock_id, int *info);
 
+void thread_rwlock_timedrdlock(int *lock_id, struct timespec *abs_timeout, int *info);
 
-void thread_rwlock_timedrdlock(int *lock_id, long *ns, int *info);
-
-void thread_rwlock_timedwrlock(int *lock_id, long *ns, int *info);
+void thread_rwlock_timedwrlock(int *lock_id, struct timespec *abs_timeout, int *info);
 
 
 

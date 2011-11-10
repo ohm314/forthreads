@@ -210,12 +210,20 @@ end interface
 !*****************************************!
 
 interface
-    subroutine thread_mutex_init(mutex_id,attr_id,info) bind(c)
+    subroutine thread_mutex_destroy(mutex_id,info) bind(c)
     use iso_c_binding
     integer(c_int), intent(in)      :: mutex_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_mutex_destroy
+end interface
+
+interface
+    subroutine thread_mutex_init(mutex_id,attr_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(out)     :: mutex_id
     integer(c_int), intent(in)      :: attr_id
     integer(c_int), intent(out)     :: info
-    end subroutine
+    end subroutine thread_mutex_init
 end interface
 
 interface
@@ -223,7 +231,7 @@ interface
     use iso_c_binding
     integer(c_int), intent(in)      :: mutex_id
     integer(c_int), intent(out)     :: info
-    end subroutine
+    end subroutine thread_mutex_lock
 end interface
 
 interface
@@ -231,7 +239,7 @@ interface
     use iso_c_binding
     integer(c_int), intent(in)      :: mutex_id
     integer(c_int), intent(out)     :: info
-    end subroutine
+    end subroutine thread_mutex_trylock
 end interface
 
 interface
@@ -239,6 +247,266 @@ interface
     use iso_c_binding
     integer(c_int), intent(in)      :: mutex_id
     integer(c_int), intent(out)     :: info
-    end subroutine
+    end subroutine thread_mutex_unlock
 end interface
+
+interface
+    subroutine thread_mutex_getprioceiling(mutex,prioceiling,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: mutex
+    integer(c_int), intent(out)     :: prioceiling
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_mutex_getprioceiling
+end interface
+
+interface
+    subroutine thread_mutex_setprioceiling(mutex,prioceiling,old_ceiling,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: mutex
+    integer(c_int), intent(in)      :: prioceiling
+    integer(c_int), intent(out)     :: old_ceiling
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_mutex_setprioceiling
+end interface
+
+interface
+    subroutine thread_mutex_timedlock(mutex,abs_timeout,info) bind(c)
+    use iso_c_binding
+    type, bind(c) :: timespec
+        integer(c_int)  :: tv_sec  ! seconds
+        integer(c_long) :: tv_nsec ! nanoseconds
+    end type timespec
+    integer(c_int), intent(in)      :: mutex
+    type(timespec), intent(in)      :: abs_timeout
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_mutex_timedlock
+end interface
+
+!*****************************************!
+!*    condition variable routines        *!
+!*****************************************!
+
+interface
+    subroutine thread_cond_destroy(cond_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: cond_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_cond_destroy
+end interface
+
+interface
+    subroutine thread_cond_init(cond_id,attr_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(out)     :: cond_id
+    integer(c_int), intent(in)      :: attr_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_cond_init
+end interface
+
+interface
+    subroutine thread_cond_timedwait(mutex,abstime,info) bind(c)
+    use iso_c_binding
+    type, bind(c) :: timespec
+        integer(c_int)  :: tv_sec  ! seconds
+        integer(c_long) :: tv_nsec ! nanoseconds
+    end type timespec
+    integer(c_int), intent(in)      :: mutex
+    type(timespec), intent(in)      :: abstime
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_cond_timedwait
+end interface
+
+interface
+    subroutine thread_cond_wait(cond_id,mutex_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: cond_id
+    integer(c_int), intent(in)      :: mutex_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_cond_wait
+end interface
+
+interface
+    subroutine thread_cond_broadcast(cond_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: cond_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_cond_broadcast
+end interface
+
+interface
+    subroutine thread_cond_signal(cond_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: cond_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_cond_signal
+end interface
+
+!****************************************!
+!*    barrier variable routines         *!
+!****************************************!
+
+
+interface
+    subroutine thread_barrier_destroy(barrier_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: barrier_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_barrier_destroy
+end interface
+
+interface
+    subroutine thread_barrier_init(barrier_id,attr_id,tcount,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(out)     :: barrier_id
+    integer(c_int), intent(in)      :: attr_id
+    integer(c_int), intent(in)      :: tcount
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_barrier_init
+end interface
+
+interface
+    subroutine thread_barrier_wait(barrier_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: barrier_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_barrier_wait
+end interface
+
+!*************************************!
+!*    spin variable routines         *!
+!*************************************!
+
+interface
+    subroutine thread_spin_destroy(spinlock_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: spinlock_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_spin_destroy
+end interface
+
+interface
+    subroutine thread_spin_init(spinlock_id,pshared,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(out)     :: spinlock_id
+    integer(c_int), intent(in)      :: pshared
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_spin_init
+end interface
+
+interface
+    subroutine thread_spin_lock(lock_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: lock_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_spin_lock
+end interface
+
+interface
+    subroutine thread_spin_trylock(lock_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: lock_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_spin_trylock
+end interface
+
+interface
+    subroutine thread_spin_unlock(lock_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: lock_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_spin_unlock
+end interface
+
+!*************************************!
+!*    rwlock variable routines       *!
+!*************************************!
+
+interface
+    subroutine thread_rwlock_destroy(rwlock_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: rwlock_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_rwlock_destroy
+end interface
+
+interface
+    subroutine thread_rwlock_init(rwlock_id,attr_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(out)     :: rwlock_id
+    integer(c_int), intent(in)      :: attr_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_rwlock_init
+end interface
+
+interface
+    subroutine thread_rwlock_rdlock(lock_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: lock_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_rwlock_rdlock
+end interface
+
+interface
+    subroutine thread_rwlock_tryrdlock(lock_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: lock_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_rwlock_tryrdlock
+end interface
+
+interface
+    subroutine thread_rwlock_wrlock(lock_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: lock_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_rwlock_wrlock
+end interface
+
+interface
+    subroutine thread_rwlock_trywrlock(lock_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: lock_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_rwlock_trywrlock
+end interface
+
+interface
+    subroutine thread_rwlock_unlock(lock_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: lock_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_rwlock_unlock
+end interface
+
+interface
+    subroutine thread_rwlock_timedrdlock(lock_id,abs_timeout,info) bind(c)
+    use iso_c_binding
+    type, bind(c) :: timespec
+        integer(c_int)  :: tv_sec  ! seconds
+        integer(c_long) :: tv_nsec ! nanoseconds
+    end type timespec
+    integer(c_int), intent(in)      :: lock_id
+    type(timespec), intent(in)      :: abs_timeout
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_rwlock_timedrdlock
+end interface
+
+interface
+    subroutine thread_rwlock_timedwrlock(lock_id,abs_timeout,info) bind(c)
+    use iso_c_binding
+    type, bind(c) :: timespec
+        integer(c_int)  :: tv_sec  ! seconds
+        integer(c_long) :: tv_nsec ! nanoseconds
+    end type timespec
+    integer(c_int), intent(in)      :: lock_id
+    type(timespec), intent(in)      :: abs_timeout
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_rwlock_timedwrlock
+end interface
+
+
+
+
+
+
 
