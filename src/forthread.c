@@ -247,7 +247,7 @@ void thread_kill(int *thread_id, int *sig, int *info) {
 }
 
 
-void thread_once(int *once_ctrl_id, void (*routine)(void), int *info) {
+void thread_once(int *once_ctrl_id, void (**routine)(void), int *info) {
   *info = FT_OK;
 
   if (!is_initialized)
@@ -255,7 +255,7 @@ void thread_once(int *once_ctrl_id, void (*routine)(void), int *info) {
   else if (!is_valid(once_ctrls,*once_ctrl_id))
     *info = FT_EINVALID;
   else
-    *info = pthread_once(once_ctrls->data[*once_ctrl_id],routine);
+    *info = pthread_once(once_ctrls->data[*once_ctrl_id],*routine);
 
 }
 
@@ -283,10 +283,10 @@ void thread_self(int *thread_id, int *info) {
 }
 
 
-void thread_atfork(void (*prepare)(void), 
-    void (*parent)(void), void (*child)(void), int *info) {
+void thread_atfork(void (**prepare)(void), 
+    void (**parent)(void), void (**child)(void), int *info) {
 
-  *info = pthread_atfork(prepare,parent,child);
+  *info = pthread_atfork(*prepare,*parent,*child);
 
 }
 

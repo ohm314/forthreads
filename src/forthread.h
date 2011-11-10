@@ -35,14 +35,14 @@ void thread_cancel(int *thread_id, int *info);
 
 void thread_kill(int *thread_id, int *sig, int *info);
 
-void thread_once(int *once_ctrl_id, void (*routine)(void), int *info);
+void thread_once(int *once_ctrl_id, void (**routine)(void), int *info);
 
 void thread_self(int *thread_id, int *info);
 
 
-void thread_atfork(void (*prepare)(void), 
-                      void (*parent)(void), 
-                      void (*child)(void), int *info);
+void thread_atfork(void (**prepare)(void), 
+                      void (**parent)(void), 
+                      void (**child)(void), int *info);
 
 // cannot be implemented using pthreads
 // this should be done in fortran
