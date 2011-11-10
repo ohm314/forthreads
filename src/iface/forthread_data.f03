@@ -16,8 +16,8 @@ type ptr_t_run
 end type ptr_t_run
 
 integer, parameter                       :: init_size = 16
-type(ptr_t_run), dimension(:), pointer       :: routine_table => NULL()
-type(ptr_t_run), dimension(:), pointer       :: tmp
+type(ptr_t_run), dimension(:), pointer   :: routine_table => NULL()
+type(ptr_t_run), dimension(:), pointer   :: tmp
 integer                                  :: routine_table_size
 integer                                  :: routine_table_mutex
 contains
