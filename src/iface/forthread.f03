@@ -175,7 +175,9 @@ implicit none
 include 'ciface.h'
 
 integer, intent(in)                 :: once_ctrl_id
-procedure(i_once), bind(c)           :: init_routine !type i_once
+procedure(i_once), bind(c)           :: init_routine
+! dangerous but works! (gfortran)
+! TODO test in other compilers
 integer, intent(out)                :: info
 
 
@@ -183,7 +185,33 @@ call thread_once(once_ctrl_id,c_funloc(init_routine),info)
 
 end subroutine
 
+! TODO implement thread_atfork
 
+! TODO implemented thread_cleanup_pop and thread_cleanup_push
+
+subroutine forthread_getconcurrency(currlevel,info)
+implicit none
+
+include 'ciface.h'
+
+integer       , intent(out)     :: currlevel
+integer       , intent(out)     :: info
+
+call thread_getconcurrency(currlevel,info)
+
+end subroutine forthread_getconcurrency
+
+subroutine forthread_setconcurrency(newlevel,info)
+implicit none
+
+include 'ciface.h'
+
+integer       , intent(in)      :: newlevel
+integer       , intent(out)     :: info
+
+call thread_setconcurrency(newlevel,info)
+
+end subroutine forthread_setconcurrency
 
 
 
