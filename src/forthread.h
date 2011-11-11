@@ -35,6 +35,8 @@ void thread_cancel(int *thread_id, int *info);
 
 void thread_kill(int *thread_id, int *sig, int *info);
 
+void thread_once_init(int *once_ctrl, int *info);
+
 void thread_once(int *once_ctrl_id, void (**routine)(void), int *info);
 
 void thread_self(int *thread_id, int *info);

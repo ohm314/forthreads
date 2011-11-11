@@ -99,15 +99,22 @@ interface
 end interface
 
 interface
+    subroutine thread_once_init(once_ctrl,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(out)   :: once_ctrl
+    integer(c_int), intent(out)   :: info
+    end subroutine thread_once_init
+end interface
+
+interface
     subroutine thread_once(once_ctrl_id,routine,info) bind(c)
     use iso_c_binding
-    integer(c_int), intent(out)      :: once_ctrl_id
+    integer(c_int), intent(in)       :: once_ctrl_id
     type(c_funptr), intent(in)       :: routine
     integer(c_int), intent(out)      :: info
     end subroutine thread_once
 end interface
 
-! TODO: consider wrapping the pthread routine directly
 interface
     subroutine thread_atfork(prepare,parent,child,info) bind(c)
     use iso_c_binding

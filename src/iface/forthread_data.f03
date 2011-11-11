@@ -6,6 +6,11 @@ abstract interface
     end subroutine i_run
 end interface
 
+abstract interface 
+    subroutine i_once() bind(c)
+    end subroutine i_once
+end interface
+
 type t_run
     procedure(i_run), pointer, nopass :: run
     integer, pointer :: arg
@@ -17,7 +22,6 @@ end type ptr_t_run
 
 integer, parameter                       :: init_size = 16
 type(ptr_t_run), dimension(:), pointer   :: routine_table => NULL()
-type(ptr_t_run), dimension(:), pointer   :: tmp
 integer                                  :: routine_table_size
 integer                                  :: routine_table_mutex
 contains

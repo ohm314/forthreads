@@ -46,6 +46,7 @@ integer, intent(out)                :: info
 
 integer                                      :: i
 procedure(i_start_routine), bind(c), pointer :: start_routinep
+type(ptr_t_run), dimension(:), pointer       :: tmp
 type(t_run), pointer :: runp
 call thread_mutex_lock(routine_table_mutex,info)
 
@@ -108,6 +109,7 @@ integer,            pointer :: val
 
 type(c_ptr)                 :: value_ptr
 
+! FIXME pointer mess
 call thread_exit(value_ptr)
 call c_f_pointer(value_ptr,val)
 end subroutine
@@ -125,7 +127,64 @@ integer,             pointer:: val
 integer, intent(out)        :: info
 
 type(c_ptr)                 :: value_ptr
-
+! FIXME pointer mess
 call thread_join(thread_id,value_ptr,info)
 call c_f_pointer(value_ptr,val)
 end subroutine
+
+subroutine forthread_cancel(thread_id,info)
+implicit none
+
+include 'ciface.h'
+
+integer, intent(in)         :: thread_id
+integer, intent(out)        :: info
+
+call thread_cancel(thread_id,info)
+end subroutine
+
+subroutine forthread_kill(thread_id,sig,info)
+implicit none
+
+include 'ciface.h'
+
+integer, intent(in)         :: thread_id
+integer, intent(in)         :: sig
+integer, intent(out)        :: info
+
+call thread_kill(thread_id,sig,info)
+end subroutine
+
+subroutine forthread_once_init(once_ctrl_id,info)
+use iso_c_binding
+implicit none
+
+integer, intent(out) :: once_ctrl_id
+integer, intent(out) :: info
+
+include 'ciface.h'
+
+call thread_once_init(once_ctrl_id,info)
+end subroutine
+
+subroutine forthread_once(once_ctrl_id,init_routine,info)
+use iso_c_binding
+use forthread_data
+implicit none
+
+include 'ciface.h'
+
+integer, intent(in)                 :: once_ctrl_id
+procedure(i_once), bind(c)           :: init_routine !type i_once
+integer, intent(out)                :: info
+
+
+call thread_once(once_ctrl_id,c_funloc(init_routine),info)
+
+end subroutine
+
+
+
+
+
+

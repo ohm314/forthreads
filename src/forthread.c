@@ -246,6 +246,29 @@ void thread_kill(int *thread_id, int *sig, int *info) {
 
 }
 
+void thread_once_init(int *once_ctrl, int *info) {
+
+  *info = 0;
+
+  if (!is_initialized) {
+    *info = FT_EINIT;
+    return;
+  }
+  
+  pthread_mutex_lock(&(once_ctrls->mutex));
+  if (once_ctrls->after == once_ctrls->size) {
+    // we exhausted the thread id array, double space
+    array_resize(&once_ctrls,once_ctrls->size*2);
+  }
+  once_ctrls->data[once_ctrls->after] = (pthread_once_t*) malloc(sizeof(pthread_once_t));
+
+  *((pthread_once_t*)once_ctrls->data[once_ctrls->after]) = PTHREAD_ONCE_INIT;
+  
+  *once_ctrl = once_ctrls->after;
+  once_ctrls->after++;
+
+  pthread_mutex_unlock(&(once_ctrls->mutex));
+}
 
 void thread_once(int *once_ctrl_id, void (**routine)(void), int *info) {
   *info = FT_OK;
