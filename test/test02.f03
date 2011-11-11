@@ -15,7 +15,7 @@ use procmod
 
 !include '../src/iface/ciface.h'
 
-integer, parameter       :: n = 10
+integer, parameter       :: n = 1000
 integer, dimension(n)    :: tid
 integer, dimension(n)    :: arg
 integer                  :: ret_val

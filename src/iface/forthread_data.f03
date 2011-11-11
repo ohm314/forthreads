@@ -1,5 +1,6 @@
 module forthread_data
 
+
 abstract interface 
     subroutine i_run(arg)
     integer :: arg

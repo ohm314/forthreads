@@ -156,9 +156,7 @@ end interface
 interface
     subroutine thread_getschedparam(thread,policy,param,info) bind(c)
     use iso_c_binding
-    type, bind(c) :: sched_param
-        integer(c_int) :: sched_priority
-    end type sched_param
+    use forthread_types
     integer(c_int), intent(in)      :: thread
     integer(c_int), intent(out)     :: policy
     type(sched_param), intent(out)  :: param
@@ -169,9 +167,7 @@ end interface
 interface
     subroutine thread_setschedparam(thread,policy,param,info) bind(c)
     use iso_c_binding
-    type, bind(c) :: sched_param
-        integer(c_int) :: sched_priority
-    end type sched_param
+    use forthread_types
     integer(c_int), intent(in)      :: thread
     integer(c_int), intent(in)      :: policy
     type(sched_param), intent(in)   :: param
@@ -279,10 +275,7 @@ end interface
 interface
     subroutine thread_mutex_timedlock(mutex,abs_timeout,info) bind(c)
     use iso_c_binding
-    type, bind(c) :: timespec
-        integer(c_int)  :: tv_sec  ! seconds
-        integer(c_long) :: tv_nsec ! nanoseconds
-    end type timespec
+    use forthread_types
     integer(c_int), intent(in)      :: mutex
     type(timespec), intent(in)      :: abs_timeout
     integer(c_int), intent(out)     :: info

@@ -10,7 +10,7 @@ LDFLAGS = -shared -pthread
 TARGET  = libforthread.so
 SOURCES := $(wildcard *.c)
 IFACE_SOURCES := $(wildcard iface/*.f03) $(wildcard iface/*.h)
-OBJECTS := $(patsubst %.c,%.o,$(SOURCES)) iface/forthread.o iface/forthread_data.o
+OBJECTS := $(patsubst %.c,%.o,$(SOURCES)) iface/forthread.o iface/forthread_data.o iface/forthread_types.o
 all: $(TARGET)
 
 $(TARGET):  $(OBJECTS)

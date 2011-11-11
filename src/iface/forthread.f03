@@ -213,6 +213,189 @@ call thread_setconcurrency(newlevel,info)
 
 end subroutine forthread_setconcurrency
 
+subroutine forthread_getcpuclockid(thread,clock_id,info)
+implicit none
+
+include 'ciface.h'
+
+integer       , intent(in)      :: thread
+integer       , intent(out)     :: clock_id
+integer       , intent(out)     :: info
+
+call thread_getcpuclockid(thread,clock_id,info)
+
+end subroutine forthread_getcpuclockid
+
+subroutine forthread_getschedparam(thread,policy,param,info)
+
+use iso_c_binding
+use forthread_types
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: thread
+integer       , intent(out)     :: policy
+type(sched_param), intent(out)  :: param
+integer       , intent(out)     :: info
+
+call thread_getschedparam(thread,policy,param,info)
+end subroutine forthread_getschedparam
+
+subroutine forthread_setschedparam(thread,policy,param,info)
+
+use iso_c_binding
+use forthread_types
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: thread
+integer       , intent(in)      :: policy
+type(sched_param), intent(in)   :: param
+integer       , intent(out)     :: info
+
+call thread_setschedparam(thread,policy,param,info)
+end subroutine forthread_setschedparam
+
+subroutine forthread_setschedprio(thread,prio,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: thread
+integer       , intent(in)      :: prio
+integer       , intent(out)     :: info
+
+call thread_setschedprio(thread,prio,info)
+end subroutine forthread_setschedprio
+
+subroutine forthread_setcancelstate(state,oldstate,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: state
+integer       , intent(out)     :: oldstate
+integer       , intent(out)     :: info
+
+call thread_setcancelstate(state,oldstate,info)
+end subroutine forthread_setcancelstate
+
+subroutine forthread_setcanceltype(ctype,oldctype,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: ctype
+integer       , intent(out)     :: oldctype
+integer       , intent(out)     :: info
+
+call thread_setcanceltype(ctype,oldctype,info)
+end subroutine forthread_setcanceltype
+
+!*****************************************!
+!*   sharing private data in threads     *!
+!*****************************************!
+
+! TODO
+
+!*****************************************!
+!*             mutex routines            *!
+!*****************************************!
+
+
+subroutine forthread_mutex_destroy(mutex_id,info)
+implicit none
+
+include 'ciface.h'
+integer, intent(in)      :: mutex_id
+integer, intent(out)     :: info
+
+call thread_mutex_destroy(mutex_id,info)
+end subroutine forthread_mutex_destroy
+
+subroutine forthread_mutex_init(mutex_id,attr_id,info)
+implicit none
+
+include 'ciface.h'
+integer, intent(out)     :: mutex_id
+integer, intent(in)      :: attr_id
+integer, intent(out)     :: info
+
+call thread_mutex_init(mutex_id,attr_id,info)
+end subroutine forthread_mutex_init
+
+subroutine forthread_mutex_lock(mutex_id,info)
+implicit none
+
+include 'ciface.h'
+integer, intent(in)      :: mutex_id
+integer, intent(out)     :: info
+
+call thread_mutex_lock(mutex_id,info)
+end subroutine forthread_mutex_lock
+
+subroutine forthread_mutex_trylock(mutex_id,info)
+implicit none
+
+include 'ciface.h'
+integer, intent(in)      :: mutex_id
+integer, intent(out)     :: info
+
+call thread_mutex_trylock(mutex_id,info)
+end subroutine forthread_mutex_trylock
+
+subroutine forthread_mutex_unlock(mutex_id,info)
+implicit none
+
+include 'ciface.h'
+integer, intent(in)      :: mutex_id
+integer, intent(out)     :: info
+
+call thread_mutex_unlock(mutex_id,info)
+end subroutine forthread_mutex_unlock
+
+subroutine forthread_mutex_getprioceiling(mutex,prioceiling,info)
+implicit none
+
+include 'ciface.h'
+integer, intent(in)      :: mutex
+integer, intent(out)     :: prioceiling
+integer, intent(out)     :: info
+
+call forthread_mutex_getprioceiling(mutex,prioceiling,info)
+end subroutine forthread_mutex_getprioceiling
+
+subroutine forthread_mutex_setprioceiling(mutex,prioceiling,old_ceiling,info)
+implicit none
+
+include 'ciface.h'
+integer, intent(in)      :: mutex
+integer, intent(in)      :: prioceiling
+integer, intent(out)     :: old_ceiling
+integer, intent(out)     :: info
+
+call forthread_mutex_setprioceiling(mutex,prioceiling,old_ceiling,info)
+end subroutine forthread_mutex_setprioceiling
+
+subroutine forthread_mutex_timedlock(mutex,abs_timeout,info)
+use forthread_types
+implicit none
+
+include 'ciface.h'
+integer(c_int), intent(in)      :: mutex
+type(timespec), intent(in)      :: abs_timeout
+integer(c_int), intent(out)     :: info
+
+call thread_mutex_timedlock(mutex,abs_timeout,info)
+
+end subroutine forthread_mutex_timedlock
+
+
+
+
+
+
+
+
+
+
 
 
 
