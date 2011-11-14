@@ -1,7 +1,4 @@
 
-
-
-
 ! pthread interfaces for fortran
 
 interface
@@ -306,10 +303,7 @@ end interface
 interface
     subroutine thread_cond_timedwait(mutex,abstime,info) bind(c)
     use iso_c_binding
-    type, bind(c) :: timespec
-        integer(c_int)  :: tv_sec  ! seconds
-        integer(c_long) :: tv_nsec ! nanoseconds
-    end type timespec
+    use forthread_types
     integer(c_int), intent(in)      :: mutex
     type(timespec), intent(in)      :: abstime
     integer(c_int), intent(out)     :: info

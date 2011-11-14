@@ -400,7 +400,7 @@ void thread_getschedparam(int *thread, int *policy, struct sched_param *param, i
 }
 
 // implements pthreads setschedparam
-void forthread_setschedparam(int *thread, int *policy, struct sched_param *param, int *info) {
+void thread_setschedparam(int *thread, int *policy, struct sched_param *param, int *info) {
   *info = FT_OK;
 
   if (!is_initialized) {

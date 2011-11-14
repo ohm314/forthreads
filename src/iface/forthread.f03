@@ -16,7 +16,7 @@ call thread_init(info)
 
 call thread_mutex_init(routine_table_mutex,-1,info)
 
-end subroutine
+end subroutine forthread_init
 
 
 subroutine forthread_destroy(info)
@@ -27,7 +27,7 @@ include 'ciface.h'
 integer, intent(out) :: info
 
 call thread_destroy(info)
-end subroutine
+end subroutine forthread_destroy
 
 
 subroutine forthread_create(thread_id,attr_id,run,arg,info)
@@ -72,7 +72,7 @@ call thread_create(thread_id,attr_id,c_funloc(start_routinep),&
 call thread_mutex_unlock(routine_table_mutex,info)
 
 
-end subroutine
+end subroutine forthread_create
     
 subroutine forthread_detach(thread_id,info)
 implicit none
@@ -83,7 +83,7 @@ integer, intent(in)             :: thread_id
 integer, intent(out)            :: info
 
 call thread_detach(thread_id,info)
-end subroutine
+end subroutine forthread_detach
 
 subroutine forthread_equal(t1,t2,info)
 implicit none
@@ -95,7 +95,7 @@ integer, intent(in)             :: t2
 integer, intent(out)            :: info
 
 call thread_equal(t1,t2,info)
-end subroutine
+end subroutine forthread_equal
 
 subroutine forthread_exit(val)
 
@@ -112,7 +112,7 @@ type(c_ptr)                 :: value_ptr
 ! FIXME pointer mess
 call thread_exit(value_ptr)
 call c_f_pointer(value_ptr,val)
-end subroutine
+end subroutine forthread_exit
 
 subroutine forthread_join(thread_id,val,info)
 
@@ -130,7 +130,7 @@ type(c_ptr)                 :: value_ptr
 ! FIXME pointer mess
 call thread_join(thread_id,value_ptr,info)
 call c_f_pointer(value_ptr,val)
-end subroutine
+end subroutine forthread_join
 
 subroutine forthread_cancel(thread_id,info)
 implicit none
@@ -141,7 +141,7 @@ integer, intent(in)         :: thread_id
 integer, intent(out)        :: info
 
 call thread_cancel(thread_id,info)
-end subroutine
+end subroutine forthread_cancel
 
 subroutine forthread_kill(thread_id,sig,info)
 implicit none
@@ -153,7 +153,7 @@ integer, intent(in)         :: sig
 integer, intent(out)        :: info
 
 call thread_kill(thread_id,sig,info)
-end subroutine
+end subroutine forthread_kill
 
 subroutine forthread_once_init(once_ctrl_id,info)
 use iso_c_binding
@@ -359,7 +359,7 @@ integer, intent(in)      :: mutex
 integer, intent(out)     :: prioceiling
 integer, intent(out)     :: info
 
-call forthread_mutex_getprioceiling(mutex,prioceiling,info)
+call thread_mutex_getprioceiling(mutex,prioceiling,info)
 end subroutine forthread_mutex_getprioceiling
 
 subroutine forthread_mutex_setprioceiling(mutex,prioceiling,old_ceiling,info)
@@ -371,7 +371,7 @@ integer, intent(in)      :: prioceiling
 integer, intent(out)     :: old_ceiling
 integer, intent(out)     :: info
 
-call forthread_mutex_setprioceiling(mutex,prioceiling,old_ceiling,info)
+call thread_mutex_setprioceiling(mutex,prioceiling,old_ceiling,info)
 end subroutine forthread_mutex_setprioceiling
 
 subroutine forthread_mutex_timedlock(mutex,abs_timeout,info)
@@ -379,14 +379,81 @@ use forthread_types
 implicit none
 
 include 'ciface.h'
-integer(c_int), intent(in)      :: mutex
+integer,        intent(in)      :: mutex
 type(timespec), intent(in)      :: abs_timeout
-integer(c_int), intent(out)     :: info
+integer,        intent(out)     :: info
 
 call thread_mutex_timedlock(mutex,abs_timeout,info)
 
 end subroutine forthread_mutex_timedlock
 
+!*****************************************!
+!*    condition variable routines        *!
+!*****************************************!
+
+subroutine forthread_cond_destroy(cond_id,info)
+implicit none
+
+include 'ciface.h'
+integer, intent(in)      :: cond_id
+integer, intent(out)     :: info
+
+call thread_cond_destroy(cond_id,info)
+end subroutine forthread_cond_destroy
+
+subroutine forthread_cond_init(cond_id,attr_id,info)
+implicit none
+
+include 'ciface.h'
+integer, intent(out)     :: cond_id
+integer, intent(in)      :: attr_id
+integer, intent(out)     :: info
+
+call thread_cond_init(cond_id,attr_id,info)
+end subroutine forthread_cond_init
+
+subroutine forthread_cond_timedwait(mutex,abstime,info)
+use forthread_types
+implicit none
+
+include 'ciface.h'
+integer, intent(in)      :: mutex
+type(timespec), intent(in)      :: abstime
+integer, intent(out)     :: info
+
+call thread_cond_timedwait(mutex,abstime,info)
+end subroutine forthread_cond_timedwait
+
+subroutine forthread_cond_wait(cond_id,mutex_id,info)
+implicit none
+
+include 'ciface.h'
+integer, intent(in)      :: cond_id
+integer, intent(in)      :: mutex_id
+integer, intent(out)     :: info
+
+call thread_cond_wait(cond_id,mutex_id,info)
+end subroutine forthread_cond_wait
+
+subroutine forthread_cond_broadcast(cond_id,info)
+implicit none
+
+include 'ciface.h'
+integer, intent(in)      :: cond_id
+integer, intent(out)     :: info
+
+call thread_cond_broadcast(cond_id,info)
+end subroutine forthread_cond_broadcast
+
+subroutine forthread_cond_signal(cond_id,info)
+implicit none
+
+include 'ciface.h'
+integer, intent(in)      :: cond_id
+integer, intent(out)     :: info
+
+call thread_cond_signal(cond_id,info)
+end subroutine forthread_cond_signal
 
 
 
