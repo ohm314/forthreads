@@ -455,12 +455,229 @@ integer, intent(out)     :: info
 call thread_cond_signal(cond_id,info)
 end subroutine forthread_cond_signal
 
+!****************************************!
+!*    barrier variable routines         *!
+!****************************************!
 
 
 
+subroutine forthread_barrier_destroy(barrier_id,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: barrier_id
+integer       , intent(out)     :: info
+
+call thread_barrier_destroy(barrier_id,info)
+end subroutine forthread_barrier_destroy
 
 
 
+subroutine forthread_barrier_init(barrier_id,attr_id,tcount,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(out)     :: barrier_id
+integer       , intent(in)      :: attr_id
+integer       , intent(in)      :: tcount
+integer       , intent(out)     :: info
+
+call thread_barrier_init(barrier_id,attr_id,tcount,info)
+end subroutine forthread_barrier_init
+
+
+
+subroutine forthread_barrier_wait(barrier_id,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: barrier_id
+integer       , intent(out)     :: info
+
+call thread_barrier_wait(barrier_id,info)
+end subroutine forthread_barrier_wait
+
+
+!*************************************!
+!*    spin variable routines         *!
+!*************************************!
+
+
+subroutine forthread_spin_destroy(spinlock_id,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: spinlock_id
+integer       , intent(out)     :: info
+
+call thread_spin_destroy(spinlock_id,info)
+end subroutine forthread_spin_destroy
+
+
+
+subroutine forthread_spin_init(spinlock_id,pshared,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(out)     :: spinlock_id
+integer       , intent(in)      :: pshared
+integer       , intent(out)     :: info
+
+call thread_spin_init(spinlock_id,pshared,info)
+end subroutine forthread_spin_init
+
+
+
+subroutine forthread_spin_lock(lock_id,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: lock_id
+integer       , intent(out)     :: info
+
+call thread_spin_lock(lock_id,info)
+end subroutine forthread_spin_lock
+
+
+
+subroutine forthread_spin_trylock(lock_id,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: lock_id
+integer       , intent(out)     :: info
+
+call thread_spin_trylock(lock_id,info)
+end subroutine forthread_spin_trylock
+
+
+
+subroutine forthread_spin_unlock(lock_id,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: lock_id
+integer       , intent(out)     :: info
+
+call thread_spin_unlock(lock_id,info)
+end subroutine forthread_spin_unlock
+
+
+!*************************************!
+!*    rwlock variable routines       *!
+!*************************************!
+
+
+subroutine forthread_rwlock_destroy(rwlock_id,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: rwlock_id
+integer       , intent(out)     :: info
+
+call thread_rwlock_destroy(rwlock_id,info)
+end subroutine forthread_rwlock_destroy
+
+
+
+subroutine forthread_rwlock_init(rwlock_id,attr_id,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(out)     :: rwlock_id
+integer       , intent(in)      :: attr_id
+integer       , intent(out)     :: info
+
+call thread_rwlock_init(rwlock_id,attr_id,info)
+end subroutine forthread_rwlock_init
+
+
+
+subroutine forthread_rwlock_rdlock(lock_id,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: lock_id
+integer       , intent(out)     :: info
+
+call thread_rwlock_rdlock(lock_id,info)
+end subroutine forthread_rwlock_rdlock
+
+
+
+subroutine forthread_rwlock_tryrdlock(lock_id,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: lock_id
+integer       , intent(out)     :: info
+
+call thread_rwlock_tryrdlock(lock_id,info)
+end subroutine forthread_rwlock_tryrdlock
+
+
+
+subroutine forthread_rwlock_wrlock(lock_id,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: lock_id
+integer       , intent(out)     :: info
+
+call thread_rwlock_wrlock(lock_id,info)
+end subroutine forthread_rwlock_wrlock
+
+
+
+subroutine forthread_rwlock_trywrlock(lock_id,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: lock_id
+integer       , intent(out)     :: info
+
+call thread_rwlock_trywrlock(lock_id,info)
+end subroutine forthread_rwlock_trywrlock
+
+
+
+subroutine forthread_rwlock_unlock(lock_id,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: lock_id
+integer       , intent(out)     :: info
+
+call thread_rwlock_unlock(lock_id,info)
+end subroutine forthread_rwlock_unlock
+
+
+
+subroutine forthread_rwlock_timedrdlock(lock_id,abs_timeout,info)
+use forthread_types
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: lock_id
+type(timespec), intent(in)      :: abs_timeout
+integer       , intent(out)     :: info
+
+call thread_rwlock_timedrdlock(lock_id,abs_timeout,info)
+end subroutine forthread_rwlock_timedrdlock
+
+
+
+subroutine forthread_rwlock_timedwrlock(lock_id,abs_timeout,info)
+use forthread_types
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: lock_id
+type(timespec), intent(in)      :: abs_timeout
+integer       , intent(out)     :: info
+
+call thread_rwlock_timedwrlock(lock_id,abs_timeout,info)
+end subroutine forthread_rwlock_timedwrlock
 
 
 

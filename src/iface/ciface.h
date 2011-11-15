@@ -474,11 +474,8 @@ end interface
 
 interface
     subroutine thread_rwlock_timedrdlock(lock_id,abs_timeout,info) bind(c)
+    use forthread_types
     use iso_c_binding
-    type, bind(c) :: timespec
-        integer(c_int)  :: tv_sec  ! seconds
-        integer(c_long) :: tv_nsec ! nanoseconds
-    end type timespec
     integer(c_int), intent(in)      :: lock_id
     type(timespec), intent(in)      :: abs_timeout
     integer(c_int), intent(out)     :: info
@@ -487,11 +484,8 @@ end interface
 
 interface
     subroutine thread_rwlock_timedwrlock(lock_id,abs_timeout,info) bind(c)
+    use forthread_types
     use iso_c_binding
-    type, bind(c) :: timespec
-        integer(c_int)  :: tv_sec  ! seconds
-        integer(c_long) :: tv_nsec ! nanoseconds
-    end type timespec
     integer(c_int), intent(in)      :: lock_id
     type(timespec), intent(in)      :: abs_timeout
     integer(c_int), intent(out)     :: info
