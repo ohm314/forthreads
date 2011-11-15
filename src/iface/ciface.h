@@ -607,21 +607,21 @@ interface
 end interface
   
 interface
-    subroutine thread_attr_getschedscope(attr,scope,info) bind(c)
+    subroutine thread_attr_getscope(attr,scope,info) bind(c)
     use iso_c_binding
     integer(c_int), intent(in)      :: attr
     integer(c_int), intent(out)     :: scope
     integer(c_int), intent(out)     :: info
-    end subroutine thread_attr_getschedscope
+    end subroutine thread_attr_getscope
 end interface
 
 interface
-    subroutine thread_attr_setschedscope(attr,scope,info) bind(c)
+    subroutine thread_attr_setscope(attr,scope,info) bind(c)
     use iso_c_binding
     integer(c_int), intent(in)      :: attr
     integer(c_int), intent(in)      :: scope
     integer(c_int), intent(out)     :: info
-    end subroutine thread_attr_setschedscope
+    end subroutine thread_attr_setscope
 end interface
 
 interface

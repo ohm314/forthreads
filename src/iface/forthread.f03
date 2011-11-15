@@ -842,7 +842,7 @@ end subroutine forthread_attr_setschedpolicy
 
 
 
-subroutine forthread_attr_getschedscope(attr,scope,info)
+subroutine forthread_attr_getscope(attr,scope,info)
 implicit none
 
 include 'ciface.h'
@@ -850,12 +850,12 @@ integer       , intent(in)      :: attr
 integer       , intent(out)     :: scope
 integer       , intent(out)     :: info
 
-call thread_attr_getschedscope(attr,scope,info)
-end subroutine forthread_attr_getschedscope
+call thread_attr_getscope(attr,scope,info)
+end subroutine forthread_attr_getscope
 
 
 
-subroutine forthread_attr_setschedscope(attr,scope,info)
+subroutine forthread_attr_setscope(attr,scope,info)
 implicit none
 
 include 'ciface.h'
@@ -863,8 +863,8 @@ integer       , intent(in)      :: attr
 integer       , intent(in)      :: scope
 integer       , intent(out)     :: info
 
-call thread_attr_setschedscope(attr,scope,info)
-end subroutine forthread_attr_setschedscope
+call thread_attr_setscope(attr,scope,info)
+end subroutine forthread_attr_setscope
 
 
 
