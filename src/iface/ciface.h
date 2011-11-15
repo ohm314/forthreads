@@ -494,6 +494,379 @@ end interface
 
 
 
+!*****************************************!
+!*      attribute object routines        *!
+!*****************************************!
+
+interface
+    subroutine thread_attr_destroy(attr,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_attr_destroy
+end interface
+
+interface
+    subroutine thread_attr_init(attr,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_attr_init
+end interface
+
+interface
+    subroutine thread_attr_getdetachstate(attr,detachstate,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: detachstate
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_attr_getdetachstate
+end interface
+
+interface
+    subroutine thread_attr_setdetachstate(attr,detachstate,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(in)      :: detachstate
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_attr_setdetachstate
+end interface
+
+interface
+    subroutine thread_attr_getguardsize(attr,guardsize,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_size_t), intent(out)  :: guardsize
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_attr_getguardsize
+end interface
+
+interface
+    subroutine thread_attr_setguardsize(attr,guardsize,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_size_t), intent(in)   :: guardsize
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_attr_setguardsize
+end interface
+
+interface
+    subroutine thread_attr_getinheritsched(attr,inheritsched,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: inheritsched
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_attr_getinheritsched
+end interface
+
+interface
+    subroutine thread_attr_setinheritsched(attr,inheritsched,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(in)      :: inheritsched
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_attr_setinheritsched
+end interface
+
+interface
+    subroutine thread_attr_getschedparam(attr,param,info) bind(c)
+    use iso_c_binding
+    use forthread_types
+    integer(c_int), intent(in)      :: attr
+    type(sched_param), intent(out)  :: param
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_attr_getschedparam
+end interface
+
+interface
+    subroutine thread_attr_setschedparam(attr,param,info) bind(c)
+    use iso_c_binding
+    use forthread_types
+    integer(c_int), intent(in)      :: attr
+    type(sched_param), intent(in)   :: param
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_attr_setschedparam
+end interface
+
+interface
+    subroutine thread_attr_getschedpolicy(attr,policy,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: policy
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_attr_getschedpolicy
+end interface
+
+interface
+    subroutine thread_attr_setschedpolicy(attr,policy,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(in)      :: policy
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_attr_setschedpolicy
+end interface
+  
+interface
+    subroutine thread_attr_getschedscope(attr,scope,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: scope
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_attr_getschedscope
+end interface
+
+interface
+    subroutine thread_attr_setschedscope(attr,scope,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(in)      :: scope
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_attr_setschedscope
+end interface
+
+interface
+    subroutine thread_attr_getstacksize(attr,stacksize,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_size_t), intent(out)  :: stacksize
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_attr_getstacksize
+end interface
+
+interface
+    subroutine thread_attr_setstacksize(attr,stacksize,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_size_t), intent(in)   :: stacksize
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_attr_setstacksize
+end interface
+  
+!*****************************************!
+!*       mutex attribute routines        *!
+!*****************************************!
+
+interface
+    subroutine thread_mutexattr_destroy(attr,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_mutexattr_destroy
+end interface
+
+interface
+    subroutine thread_mutexattr_init(attr,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_mutexattr_init
+end interface
+
+interface
+    subroutine thread_mutexattr_getpshared(attr,pshared,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: pshared
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_mutexattr_getpshared
+end interface
+
+interface
+    subroutine thread_mutexattr_setpshared(attr,pshared,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(in)      :: pshared
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_mutexattr_setpshared
+end interface
+
+interface
+    subroutine thread_mutexattr_getprioceiling(attr,prioceiling,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: prioceiling
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_mutexattr_getprioceiling
+end interface
+
+interface
+    subroutine thread_mutexattr_setprioceiling(attr,prioceiling,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(in)      :: prioceiling
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_mutexattr_setprioceiling
+end interface
+
+interface
+    subroutine thread_mutexattr_getprotocol(attr,protocol,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: protocol
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_mutexattr_getprotocol
+end interface
+
+interface
+    subroutine thread_mutexattr_setprotocol(attr,protocol,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(in)      :: protocol
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_mutexattr_setprotocol
+end interface
+
+interface
+    subroutine thread_mutexattr_gettype(attr,mtype,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: mtype
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_mutexattr_gettype
+end interface
+
+interface
+    subroutine thread_mutexattr_settype(attr,mtype,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(in)      :: mtype
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_mutexattr_settype
+end interface
+
+
+!*****************************************************!
+!*    condition attriubute variable routines         *!
+!*****************************************************!
+
+interface
+    subroutine thread_condattr_destroy(attr,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_condattr_destroy
+end interface
+
+interface
+    subroutine thread_condattr_init(attr,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_condattr_init
+end interface
+
+interface
+    subroutine thread_condattr_getpshared(attr,pshared,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: pshared
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_condattr_getpshared
+end interface
+
+interface
+    subroutine thread_condattr_setpshared(attr,pshared,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(in)      :: pshared
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_condattr_setpshared
+end interface
+
+interface
+    subroutine thread_condattr_getclock(attr,clock_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: clock_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_condattr_getclock
+end interface
+
+interface
+    subroutine thread_condattr_setclock(attr,clock_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(in)      :: clock_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_condattr_setclock
+end interface
+
+!**************************************************!
+!*    barrier attribute variable routines         *!
+!**************************************************!
+
+
+interface
+    subroutine thread_barrierattr_destroy(attr,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_barrierattr_destroy
+end interface
+
+interface
+    subroutine thread_barrierattr_init(attr,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_barrierattr_init
+end interface
+
+interface
+    subroutine thread_barrierattr_getpshared(attr,pshared,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: pshared
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_barrierattr_getpshared
+end interface
+
+interface
+    subroutine thread_barrierattr_setpshared(attr,pshared,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(in)      :: pshared
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_barrierattr_setpshared
+end interface
+
+!**************************************************!
+!*    rwlock attribute variable routines         *!
+!**************************************************!
+
+interface
+    subroutine thread_rwlockattr_destroy(attr,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_rwlockattr_destroy
+end interface
+
+interface
+    subroutine thread_rwlockattr_init(attr,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_rwlockattr_init
+end interface
+
+interface
+    subroutine thread_rwlockattr_getpshared(attr,pshared,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(out)     :: pshared
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_rwlockattr_getpshared
+end interface
+
+interface
+    subroutine thread_rwlockattr_setpshared(attr,pshared,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: attr
+    integer(c_int), intent(in)      :: pshared
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_rwlockattr_setpshared
+end interface
 
 
 
