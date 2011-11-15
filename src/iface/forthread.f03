@@ -679,6 +679,542 @@ integer       , intent(out)     :: info
 call thread_rwlock_timedwrlock(lock_id,abs_timeout,info)
 end subroutine forthread_rwlock_timedwrlock
 
+!*****************************************!
+!*      attribute object routines        *!
+!*****************************************!
+
+
+subroutine forthread_attr_destroy(attr,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: info
+
+call thread_attr_destroy(attr,info)
+end subroutine forthread_attr_destroy
+
+
+
+subroutine forthread_attr_init(attr,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: info
+
+call thread_attr_init(attr,info)
+end subroutine forthread_attr_init
+
+
+
+subroutine forthread_attr_getdetachstate(attr,detachstate,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: detachstate
+integer       , intent(out)     :: info
+
+call thread_attr_getdetachstate(attr,detachstate,info)
+end subroutine forthread_attr_getdetachstate
+
+
+
+subroutine forthread_attr_setdetachstate(attr,detachstate,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(in)      :: detachstate
+integer       , intent(out)     :: info
+
+call thread_attr_setdetachstate(attr,detachstate,info)
+end subroutine forthread_attr_setdetachstate
+
+
+
+subroutine forthread_attr_getguardsize(attr,guardsize,info)
+use forthread_types
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer(size_t), intent(out)    :: guardsize
+integer       , intent(out)     :: info
+
+call thread_attr_getguardsize(attr,guardsize,info)
+end subroutine forthread_attr_getguardsize
+
+
+
+subroutine forthread_attr_setguardsize(attr,guardsize,info)
+use forthread_types
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer(size_t), intent(in)     :: guardsize
+integer       , intent(out)     :: info
+
+call thread_attr_setguardsize(attr,guardsize,info)
+end subroutine forthread_attr_setguardsize
+
+
+
+subroutine forthread_attr_getinheritsched(attr,inheritsched,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: inheritsched
+integer       , intent(out)     :: info
+
+call thread_attr_getinheritsched(attr,inheritsched,info)
+end subroutine forthread_attr_getinheritsched
+
+
+
+subroutine forthread_attr_setinheritsched(attr,inheritsched,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(in)      :: inheritsched
+integer       , intent(out)     :: info
+
+call thread_attr_setinheritsched(attr,inheritsched,info)
+end subroutine forthread_attr_setinheritsched
+
+
+
+subroutine forthread_attr_getschedparam(attr,param,info)
+use forthread_types
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+type(sched_param), intent(out)  :: param
+integer       , intent(out)     :: info
+
+call thread_attr_getschedparam(attr,param,info)
+end subroutine forthread_attr_getschedparam
+
+
+
+subroutine forthread_attr_setschedparam(attr,param,info)
+use forthread_types
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+type(sched_param), intent(in)   :: param
+integer       , intent(out)     :: info
+
+call thread_attr_setschedparam(attr,param,info)
+end subroutine forthread_attr_setschedparam
+
+
+
+subroutine forthread_attr_getschedpolicy(attr,policy,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: policy
+integer       , intent(out)     :: info
+
+call thread_attr_getschedpolicy(attr,policy,info)
+end subroutine forthread_attr_getschedpolicy
+
+
+
+subroutine forthread_attr_setschedpolicy(attr,policy,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(in)      :: policy
+integer       , intent(out)     :: info
+
+call thread_attr_setschedpolicy(attr,policy,info)
+end subroutine forthread_attr_setschedpolicy
+
+
+
+subroutine forthread_attr_getschedscope(attr,scope,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: scope
+integer       , intent(out)     :: info
+
+call thread_attr_getschedscope(attr,scope,info)
+end subroutine forthread_attr_getschedscope
+
+
+
+subroutine forthread_attr_setschedscope(attr,scope,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(in)      :: scope
+integer       , intent(out)     :: info
+
+call thread_attr_setschedscope(attr,scope,info)
+end subroutine forthread_attr_setschedscope
+
+
+
+subroutine forthread_attr_getstacksize(attr,stacksize,info)
+use forthread_types
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer(size_t), intent(out)    :: stacksize
+integer       , intent(out)     :: info
+
+call thread_attr_getstacksize(attr,stacksize,info)
+end subroutine forthread_attr_getstacksize
+
+
+
+subroutine forthread_attr_setstacksize(attr,stacksize,info)
+use forthread_types
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer(size_t), intent(in)     :: stacksize
+integer       , intent(out)     :: info
+
+call thread_attr_setstacksize(attr,stacksize,info)
+end subroutine forthread_attr_setstacksize
+
+
+!*****************************************!
+!*       mutex attribute routines        *!
+!*****************************************!
+
+
+subroutine forthread_mutexattr_destroy(attr,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: info
+
+call thread_mutexattr_destroy(attr,info)
+end subroutine forthread_mutexattr_destroy
+
+
+
+subroutine forthread_mutexattr_init(attr,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: info
+
+call thread_mutexattr_init(attr,info)
+end subroutine forthread_mutexattr_init
+
+
+
+subroutine forthread_mutexattr_getpshared(attr,pshared,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: pshared
+integer       , intent(out)     :: info
+
+call thread_mutexattr_getpshared(attr,pshared,info)
+end subroutine forthread_mutexattr_getpshared
+
+
+
+subroutine forthread_mutexattr_setpshared(attr,pshared,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(in)      :: pshared
+integer       , intent(out)     :: info
+
+call thread_mutexattr_setpshared(attr,pshared,info)
+end subroutine forthread_mutexattr_setpshared
+
+
+
+subroutine forthread_mutexattr_getprioceiling(attr,prioceiling,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: prioceiling
+integer       , intent(out)     :: info
+
+call thread_mutexattr_getprioceiling(attr,prioceiling,info)
+end subroutine forthread_mutexattr_getprioceiling
+
+
+
+subroutine forthread_mutexattr_setprioceiling(attr,prioceiling,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(in)      :: prioceiling
+integer       , intent(out)     :: info
+
+call thread_mutexattr_setprioceiling(attr,prioceiling,info)
+end subroutine forthread_mutexattr_setprioceiling
+
+
+
+subroutine forthread_mutexattr_getprotocol(attr,protocol,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: protocol
+integer       , intent(out)     :: info
+
+call thread_mutexattr_getprotocol(attr,protocol,info)
+end subroutine forthread_mutexattr_getprotocol
+
+
+
+subroutine forthread_mutexattr_setprotocol(attr,protocol,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(in)      :: protocol
+integer       , intent(out)     :: info
+
+call thread_mutexattr_setprotocol(attr,protocol,info)
+end subroutine forthread_mutexattr_setprotocol
+
+
+
+subroutine forthread_mutexattr_gettype(attr,mtype,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: mtype
+integer       , intent(out)     :: info
+
+call thread_mutexattr_gettype(attr,mtype,info)
+end subroutine forthread_mutexattr_gettype
+
+
+
+subroutine forthread_mutexattr_settype(attr,mtype,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(in)      :: mtype
+integer       , intent(out)     :: info
+
+call thread_mutexattr_settype(attr,mtype,info)
+end subroutine forthread_mutexattr_settype
+
+
+
+!*****************************************************!
+!*    condition attriubute variable routines         *!
+!*****************************************************!
+
+
+subroutine forthread_condattr_destroy(attr,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: info
+
+call thread_condattr_destroy(attr,info)
+end subroutine forthread_condattr_destroy
+
+
+
+subroutine forthread_condattr_init(attr,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: info
+
+call thread_condattr_init(attr,info)
+end subroutine forthread_condattr_init
+
+
+
+subroutine forthread_condattr_getpshared(attr,pshared,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: pshared
+integer       , intent(out)     :: info
+
+call thread_condattr_getpshared(attr,pshared,info)
+end subroutine forthread_condattr_getpshared
+
+
+
+subroutine forthread_condattr_setpshared(attr,pshared,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(in)      :: pshared
+integer       , intent(out)     :: info
+
+call thread_condattr_setpshared(attr,pshared,info)
+end subroutine forthread_condattr_setpshared
+
+
+
+subroutine forthread_condattr_getclock(attr,clock_id,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: clock_id
+integer       , intent(out)     :: info
+
+call thread_condattr_getclock(attr,clock_id,info)
+end subroutine forthread_condattr_getclock
+
+
+
+subroutine forthread_condattr_setclock(attr,clock_id,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(in)      :: clock_id
+integer       , intent(out)     :: info
+
+call thread_condattr_setclock(attr,clock_id,info)
+end subroutine forthread_condattr_setclock
+
+
+!**************************************************!
+!*    barrier attribute variable routines         *!
+!**************************************************!
+
+
+
+subroutine forthread_barrierattr_destroy(attr,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: info
+
+call thread_barrierattr_destroy(attr,info)
+end subroutine forthread_barrierattr_destroy
+
+
+
+subroutine forthread_barrierattr_init(attr,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: info
+
+call thread_barrierattr_init(attr,info)
+end subroutine forthread_barrierattr_init
+
+
+
+subroutine forthread_barrierattr_getpshared(attr,pshared,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: pshared
+integer       , intent(out)     :: info
+
+call thread_barrierattr_getpshared(attr,pshared,info)
+end subroutine forthread_barrierattr_getpshared
+
+
+
+subroutine forthread_barrierattr_setpshared(attr,pshared,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(in)      :: pshared
+integer       , intent(out)     :: info
+
+call thread_barrierattr_setpshared(attr,pshared,info)
+end subroutine forthread_barrierattr_setpshared
+
+
+!**************************************************!
+!*    rwlock attribute variable routines         *!
+!**************************************************!
+
+
+subroutine forthread_rwlockattr_destroy(attr,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: info
+
+call thread_rwlockattr_destroy(attr,info)
+end subroutine forthread_rwlockattr_destroy
+
+
+
+subroutine forthread_rwlockattr_init(attr,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: info
+
+call thread_rwlockattr_init(attr,info)
+end subroutine forthread_rwlockattr_init
+
+
+
+subroutine forthread_rwlockattr_getpshared(attr,pshared,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(out)     :: pshared
+integer       , intent(out)     :: info
+
+call thread_rwlockattr_getpshared(attr,pshared,info)
+end subroutine forthread_rwlockattr_getpshared
+
+
+
+subroutine forthread_rwlockattr_setpshared(attr,pshared,info)
+implicit none
+
+include 'ciface.h'
+integer       , intent(in)      :: attr
+integer       , intent(in)      :: pshared
+integer       , intent(out)     :: info
+
+call thread_rwlockattr_setpshared(attr,pshared,info)
+end subroutine forthread_rwlockattr_setpshared
 
 
 

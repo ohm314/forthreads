@@ -7,3 +7,5 @@ type, bind(c) :: timespec
     integer(c_int)  :: tv_sec  ! seconds
     integer(c_long) :: tv_nsec ! nanoseconds
 end type timespec
+
+integer, parameter :: size_t = c_size_t
