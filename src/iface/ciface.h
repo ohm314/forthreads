@@ -203,7 +203,45 @@ end interface
 !*   sharing private data in threads     *!
 !*****************************************!
 
-! TODO
+
+!void thread_key_delete(int *key_id, int *info);
+interface
+    subroutine thread_key_delete(key_id,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: key_id
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_key_delete
+end interface
+
+!void thread_key_create(int *key_id,void (*destructor)(void *),int *info);
+interface
+    subroutine thread_key_create(key_id,destructor,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(out)      :: key_id
+    type(c_funptr), intent(in)      :: destructor
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_key_create
+end interface
+
+!void thread_getspecific(int *key, void **value, int *info);
+interface
+    subroutine thread_getspecific(key,val,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: key
+    type(c_ptr), intent(out)        :: val
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_getspecific
+end interface
+
+!void thread_setspecific(int *key, void **value, int *info);
+interface
+    subroutine thread_setspecific(key,val,info) bind(c)
+    use iso_c_binding
+    integer(c_int), intent(in)      :: key
+    type(c_ptr), intent(in)         :: val
+    integer(c_int), intent(out)     :: info
+    end subroutine thread_setspecific
+end interface
 
 !*****************************************!
 !*             mutex routines            *!

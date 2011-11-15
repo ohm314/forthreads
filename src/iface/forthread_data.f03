@@ -12,6 +12,13 @@ abstract interface
     end subroutine i_once
 end interface
 
+abstract interface 
+    subroutine i_destructor(arg) bind(c)
+    use iso_c_binding
+    integer(c_int) :: arg
+    end subroutine i_destructor
+end interface
+
 type t_run
     procedure(i_run), pointer, nopass :: run
     integer, pointer :: arg

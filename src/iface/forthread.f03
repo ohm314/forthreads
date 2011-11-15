@@ -293,7 +293,40 @@ end subroutine forthread_setcanceltype
 !*   sharing private data in threads     *!
 !*****************************************!
 
+subroutine forthread_key_delete(key_id,info)
+implicit none
+integer       , intent(in)      :: key_id
+integer       , intent(out)     :: info
+
+call thread_key_delete(key_id,info)
+end subroutine forthread_key_delete
+
 ! TODO
+!void thread_key_create(int *key_id,void (*destructor)(void *),int *info);
+subroutine forthread_key_create(key_id,destructor,info)
+use iso_c_binding
+use forthread_data
+implicit none
+
+include 'ciface.h'
+
+integer, intent(out)                :: key_id
+procedure(i_destructor), bind(c)    :: destructor
+! dangerous but works! (gfortran)
+! TODO test in other compilers
+integer, intent(out)                :: info
+
+
+call thread_key_create(key_id,c_funloc(destructor),info)
+
+end subroutine
+
+! no wrappers provided for the following two routines
+!void thread_getspecific(int *key, void **value, int *info);
+
+!void thread_setspecific(int *key, void **value, int *info);
+
+
 
 !*****************************************!
 !*             mutex routines            *!
