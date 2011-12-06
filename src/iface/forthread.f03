@@ -295,6 +295,8 @@ end subroutine forthread_setcanceltype
 
 subroutine forthread_key_delete(key_id,info)
 implicit none
+
+include 'ciface.h'
 integer       , intent(in)      :: key_id
 integer       , intent(out)     :: info
 
