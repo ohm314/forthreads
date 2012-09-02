@@ -30,6 +30,7 @@ integer, intent(out) :: info
 
 deallocate(routine_table)
 routine_table_size = 0
+call thread_mutex_destroy(routine_table_mutex,info)
 call thread_destroy(info)
 end subroutine forthread_destroy
 
