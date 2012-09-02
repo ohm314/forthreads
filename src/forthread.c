@@ -262,8 +262,12 @@ void thread_once_init(int *once_ctrl, int *info) {
   }
   once_ctrls->data[once_ctrls->after] = (pthread_once_t*) malloc(sizeof(pthread_once_t));
 
+#ifdef __DARWIN
+  pthread_once((pthread_once_t*)once_ctrls->data[once_ctrls->after],NULL);
+#else
   *((pthread_once_t*)once_ctrls->data[once_ctrls->after]) = PTHREAD_ONCE_INIT;
-  
+#endif
+
   *once_ctrl = once_ctrls->after;
   once_ctrls->after++;
 
@@ -351,6 +355,7 @@ void thread_setconcurrency(int *new_level, int *info) {
 
 }
 
+#ifndef __DARWIN
 void thread_getcpuclockid(int *thread, int *clock_id, int *info) {
   *info = FT_OK;
   clockid_t cid; //we'll it casting onto an int. This may be dangerous
@@ -375,6 +380,7 @@ void thread_getcpuclockid(int *thread, int *clock_id, int *info) {
   pthread_mutex_unlock(&(threads->mutex));
 
 }
+#endif
 
 // implements pthread_getschedparam
 void thread_getschedparam(int *thread, int *policy, struct sched_param *param, int *info) {
@@ -421,6 +427,7 @@ void thread_setschedparam(int *thread, int *policy, struct sched_param *param, i
 
 }
 
+#ifndef __DARWIN
 void thread_setschedprio(int *thread, int *prio, int *info) {
   *info = FT_OK;
 
@@ -441,7 +448,7 @@ void thread_setschedprio(int *thread, int *prio, int *info) {
   pthread_mutex_unlock(&(threads->mutex));
 
 }
-
+#endif
 void thread_setcancelstate(int *state, int *oldstate, int *info) {
   *info = FT_OK;
 
@@ -744,6 +751,7 @@ void thread_mutex_setprioceiling(int *mutex, int *prioceiling, int *old_ceiling,
 
 }
 
+#ifndef __DARWIN
 // TODO see what we can do with timespec
 void thread_mutex_timedlock(int *mutex, struct timespec *abs_timeout, int *info) {
   *info = FT_OK;
@@ -763,6 +771,7 @@ void thread_mutex_timedlock(int *mutex, struct timespec *abs_timeout, int *info)
                                  abs_timeout);
 
 }
+#endif
 
 
 /*****************************************/
@@ -915,6 +924,7 @@ void thread_cond_signal(int *cond_id, int *info) {
 
 
 
+#ifdef _POSIX_BARRIERS
 /****************************************/
 /*    barrier variable routines         */
 /****************************************/
@@ -1005,9 +1015,10 @@ void thread_barrier_wait(int *barrier_id, int *info) {
   *info = pthread_barrier_wait((pthread_barrier_t*)(barriers->data[*barrier_id]));
 
 }
+#endif
 
 
-
+#ifndef __DARWIN
 /*************************************/
 /*    spin variable routines         */
 /*************************************/
@@ -1135,6 +1146,7 @@ void thread_spin_unlock(int *lock_id, int *info) {
   *info = pthread_spin_unlock((pthread_spinlock_t*)(spinlocks->data[*lock_id]));
 
 }
+#endif
 
 
 /*************************************/
@@ -1305,6 +1317,7 @@ void thread_rwlock_unlock(int *lock_id, int *info) {
 }
 
 
+#ifndef __DARWIN
 void thread_rwlock_timedrdlock(int *lock_id, struct timespec *abs_timeout, int *info) {
   *info = FT_OK;
 
@@ -1342,7 +1355,7 @@ void thread_rwlock_timedwrlock(int *lock_id, struct timespec *abs_timeout, int *
                                  abs_timeout);
 
 }
-
+#endif
 
 
 

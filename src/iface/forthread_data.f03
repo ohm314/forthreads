@@ -38,7 +38,7 @@ type(c_ptr) function start_routine(arg) bind(c)
 use iso_c_binding
 implicit none
 
-include 'ciface.h'
+#include "ciface.h"
 
 type(c_ptr), value, intent(in)  :: arg
 !returns?

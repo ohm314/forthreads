@@ -4,6 +4,12 @@
 #include <pthread.h>
 #include <stdlib.h>
 
+
+
+#ifdef __DARWIN
+typedef int clockid_t;
+#endif
+
 /**
  * A convenient array type
  **/

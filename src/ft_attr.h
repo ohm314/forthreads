@@ -98,10 +98,13 @@ void thread_condattr_getpshared(int *attr, int *pshared, int *info);
 
 void thread_condattr_setpshared(int *attr, int *pshared, int *info);
 
+#ifndef __DARWIN
 void thread_condattr_getclock(int *attr, int *clock_id, int *info);
 
 void thread_condattr_setclock(int *attr, int *clock_id, int *info);
+#endif
 
+#ifdef _POSIX_BARRIERS
 /**************************************************/
 /*    barrier attribute variable routines         */
 /**************************************************/
@@ -114,6 +117,7 @@ void thread_barrierattr_init(int *attr,int *info);
 void thread_barrierattr_getpshared(int *attr, int *pshared, int *info);
 
 void thread_barrierattr_setpshared(int *attr, int *pshared, int *info);
+#endif
 
 /**************************************************/
 /*    rwlock attribute variable routines         */

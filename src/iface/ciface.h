@@ -140,6 +140,7 @@ interface
     end subroutine thread_setconcurrency
 end interface
 
+#ifndef __DARWIN
 interface
     subroutine thread_getcpuclockid(thread,clock_id,info) bind(c)
     use iso_c_binding
@@ -148,6 +149,7 @@ interface
     integer(c_int), intent(out)     :: info
     end subroutine thread_getcpuclockid
 end interface
+#endif
 
 
 interface
@@ -172,6 +174,7 @@ interface
     end subroutine thread_setschedparam
 end interface
 
+#ifndef __DARWIN
 interface
     subroutine thread_setschedprio(thread,prio,info) bind(c)
     use iso_c_binding
@@ -180,6 +183,7 @@ interface
     integer(c_int), intent(out)     :: info
     end subroutine thread_setschedprio
 end interface
+#endif
 
 interface
     subroutine thread_setcancelstate(state,oldstate,info) bind(c)
@@ -307,6 +311,7 @@ interface
     end subroutine thread_mutex_setprioceiling
 end interface
 
+#ifndef __DARWIN
 interface
     subroutine thread_mutex_timedlock(mutex,abs_timeout,info) bind(c)
     use iso_c_binding
@@ -316,6 +321,7 @@ interface
     integer(c_int), intent(out)     :: info
     end subroutine thread_mutex_timedlock
 end interface
+#endif
 
 !*****************************************!
 !*    condition variable routines        *!
@@ -373,6 +379,7 @@ interface
     end subroutine thread_cond_signal
 end interface
 
+#ifdef __DARWIN
 !****************************************!
 !*    barrier variable routines         *!
 !****************************************!
@@ -448,6 +455,7 @@ interface
     integer(c_int), intent(out)     :: info
     end subroutine thread_spin_unlock
 end interface
+#endif
 
 !*************************************!
 !*    rwlock variable routines       *!
@@ -510,6 +518,7 @@ interface
     end subroutine thread_rwlock_unlock
 end interface
 
+#ifndef __DARWIN
 interface
     subroutine thread_rwlock_timedrdlock(lock_id,abs_timeout,info) bind(c)
     use forthread_types
@@ -529,6 +538,7 @@ interface
     integer(c_int), intent(out)     :: info
     end subroutine thread_rwlock_timedwrlock
 end interface
+#endif
 
 
 
@@ -811,6 +821,7 @@ interface
     end subroutine thread_condattr_setpshared
 end interface
 
+#ifndef __DARWIN
 interface
     subroutine thread_condattr_getclock(attr,clock_id,info) bind(c)
     use iso_c_binding
@@ -828,6 +839,7 @@ interface
     integer(c_int), intent(out)     :: info
     end subroutine thread_condattr_setclock
 end interface
+
 
 !**************************************************!
 !*    barrier attribute variable routines         *!
@@ -867,6 +879,7 @@ interface
     integer(c_int), intent(out)     :: info
     end subroutine thread_barrierattr_setpshared
 end interface
+#endif
 
 !**************************************************!
 !*    rwlock attribute variable routines         *!

@@ -8,6 +8,8 @@
 #include <pthread.h>
 
 
+
+
 void thread_init(int *info);
 
 void thread_destroy(int* info);
@@ -62,10 +64,16 @@ void thread_getconcurrency(int *currlevel, int *info);
 
 void thread_setconcurrency(int *newlevel, int *info);
 
+
+#ifndef __DARWIN
 void thread_getcpuclockid(int *thread, int *clock_id, int *info);
+#endif
+
 void thread_getschedparam(int *thread, int *policy, struct sched_param *param, int *info);
 void thread_setschedparam(int *thread, int *policy, struct sched_param *param, int *info);
+#ifndef __DARWIN
 void thread_setschedprio(int *thread, int *prio, int *info);
+#endif
 
 void thread_setcancelstate(int *state, int *oldstate, int *info);
 void thread_setcanceltype(int *type, int *oldtype, int *info);
@@ -101,7 +109,9 @@ void thread_mutex_getprioceiling(int *mutex, int *prioceiling, int *info);
 
 void thread_mutex_setprioceiling(int *mutex, int *prioceiling, int *old_ceiling, int *info);
 
+#ifndef __DARWIN
 void thread_mutex_timedlock(int *mutex, struct timespec *abs_timeout, int *info);
+#endif
 
 /*****************************************/
 /*    condition variable routines        */
@@ -122,6 +132,7 @@ void thread_cond_signal(int *cond_id, int *info);
 
 
 
+#ifdef _POSIX_BARRIERS
 /****************************************/
 /*    barrier variable routines         */
 /****************************************/
@@ -132,9 +143,10 @@ void thread_barrier_destroy(int *barrier_id, int *info);
 void thread_barrier_init(int *barrier_id, int *attr_id, int *count, int *info);
 
 void thread_barrier_wait(int *barrier_id, int *info);
+#endif
 
 
-
+#ifndef __DARWIN
 /*************************************/
 /*    spin variable routines         */
 /*************************************/
@@ -150,6 +162,7 @@ void thread_spin_trylock(int *lock_id, int *info);
 
 
 void thread_spin_unlock(int *lock_id, int *info);
+#endif
 
 /*************************************/
 /*    rwlock variable routines       */
@@ -170,10 +183,11 @@ void thread_rwlock_trywrlock(int *lock_id, int *info);
 
 void thread_rwlock_unlock(int *lock_id, int *info);
 
+#ifndef __DARWIN
 void thread_rwlock_timedrdlock(int *lock_id, struct timespec *abs_timeout, int *info);
 
 void thread_rwlock_timedwrlock(int *lock_id, struct timespec *abs_timeout, int *info);
-
+#endif
 
 
 #endif //FORT_PTHREAD_H_

@@ -732,6 +732,7 @@ void thread_condattr_setpshared(int *attr, int *pshared, int *info) {
 
 }
 
+#ifndef __DARWIN
 void thread_condattr_getclock(int *attr, int *clock_id, int *info) {
   *info = FT_OK;
   clockid_t cid; //we'll it casting onto an int. This may be dangerous
@@ -781,8 +782,10 @@ void thread_condattr_setclock(int *attr, int *clock_id, int *info) {
   pthread_mutex_unlock(&(cond_attrs->mutex));
 
 }
+#endif
 
 
+#ifdef _POSIX_BARRIERS
 /**************************************************/
 /*    barrier attribute variable routines         */
 /**************************************************/
@@ -896,6 +899,7 @@ void thread_barrierattr_setpshared(int *attr, int *pshared, int *info) {
   pthread_mutex_unlock(&(barrier_attrs->mutex));
 
 }
+#endif
 
 /**************************************************/
 /*    rwlock attribute variable routines         */
