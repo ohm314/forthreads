@@ -57,6 +57,38 @@ void thread_init(int *info) {
 
 void thread_destroy(int* info) {
   // TODO: deallocate all, destroy all threads, mutexes
+  int id;
+  for(id = 1; id < threads->after; id++) {
+    thread_cancel(&id,info);
+  }
+  array_delete(threads);
+  array_delete(thread_attrs);
+  array_delete(thread_keys);
+  array_delete(once_ctrls);
+  for(id = 0; id < mutexes->after; id++) {
+    thread_mutex_destroy(&id,info);
+  }
+  array_delete(mutexes);
+  array_delete(mutex_attrs);
+  for(id = 0; id < conds->after; id++) {
+    thread_cond_destroy(&id,info);
+  }
+  array_delete(conds);
+  array_delete(cond_attrs);
+  for(id = 0; id < barriers->after; id++) {
+    thread_barrier_destroy(&id,info);
+  }
+  array_delete(barriers);
+  array_delete(barrier_attrs);
+  for(id = 0; id < spinlocks->after; id++) {
+    thread_spin_destroy(&id,info);
+  }
+  varray_delete(spinlocks);
+  for(id = 0; id < rwlocks->after; id++) {
+    thread_rwlock_destroy(&id,info);
+  }
+  array_delete(rwlocks);
+  array_delete(rwlock_attrs);
   *info = FT_OK;
 }
 
