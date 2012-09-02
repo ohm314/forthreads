@@ -56,7 +56,6 @@ void thread_init(int *info) {
 }
 
 void thread_destroy(int* info) {
-  // TODO: deallocate all, destroy all threads, mutexes
   int id;
   for(id = 1; id < threads->after; id++) {
     thread_cancel(&id,info);
