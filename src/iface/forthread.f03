@@ -102,6 +102,7 @@ integer, intent(out)            :: info
 call thread_equal(t1,t2,info)
 end subroutine forthread_equal
 
+! Exits the current thread
 subroutine forthread_exit(val)
 
 use iso_c_binding
@@ -112,11 +113,8 @@ implicit none
 
 integer,            pointer :: val
 
-type(c_ptr)                 :: value_ptr
 
-! FIXME pointer mess
-call thread_exit(value_ptr)
-call c_f_pointer(value_ptr,val)
+call thread_exit(c_loc(val))
 end subroutine forthread_exit
 
 subroutine forthread_join(thread_id,val,info)
@@ -132,7 +130,6 @@ integer,             pointer:: val
 integer, intent(out)        :: info
 
 type(c_ptr)                 :: value_ptr
-! FIXME pointer mess
 call thread_join(thread_id,value_ptr,info)
 call c_f_pointer(value_ptr,val)
 end subroutine forthread_join
@@ -191,8 +188,6 @@ call thread_once(once_ctrl_id,c_funloc(init_routine),info)
 end subroutine
 
 ! TODO implement thread_atfork
-
-! TODO implemented thread_cleanup_pop and thread_cleanup_push
 
 subroutine forthread_getconcurrency(currlevel,info)
 implicit none
@@ -312,8 +307,6 @@ integer       , intent(out)     :: info
 call thread_key_delete(key_id,info)
 end subroutine forthread_key_delete
 
-! TODO
-!void thread_key_create(int *key_id,void (*destructor)(void *),int *info);
 subroutine forthread_key_create(key_id,destructor,info)
 use iso_c_binding
 use forthread_data
@@ -1268,7 +1261,4 @@ integer       , intent(out)     :: info
 
 call thread_rwlockattr_setpshared(attr,pshared,info)
 end subroutine forthread_rwlockattr_setpshared
-
-
-
 

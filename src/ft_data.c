@@ -37,6 +37,9 @@ void varray_init(varray_t **array,int size) {
   (*array)->after = 0;
 }
 
+/**
+ * Resize array to size. We assume array to be NOT NULL
+ **/
 void array_resize(array_t **array,int size) {
   int i;
 
@@ -48,6 +51,9 @@ void array_resize(array_t **array,int size) {
 
 }
 
+/**
+ * Resize varray to size. We assume varray to be NOT NULL
+ **/
 void varray_resize(varray_t **array,int size) {
   int i;
 
@@ -59,17 +65,29 @@ void varray_resize(varray_t **array,int size) {
 
 }
 
+/**
+ * Free memory for array
+ **/
 void array_delete(array_t *array) {
   free(array->data);
   free(array);
 }
 
+/**
+ * Free memory for varray
+ **/
 void varray_delete(varray_t *array) {
   free(array->data);
   free(array);
 }
 
-// This only works for pointer arrays!!
+/**
+ * A simple helper function to check whether an ID
+ * is pointing to a valid element in arr. This assumes
+ * that changes in arr are alwys done using this library.
+ *
+ * This function is not thread safe
+ **/
 int is_valid(array_t *arr, int id) {
   if ((id >= 0) && (id < arr->after) && 
       (arr->data[id] != NULL))
@@ -78,7 +96,14 @@ int is_valid(array_t *arr, int id) {
     return 0;
 }
 
-// varray version
+/**
+ * (varray version)
+ * A simple helper function to check whether an ID
+ * is pointing to a valid element in arr. This assumes
+ * that changes in arr are alwys done using this library.
+ *
+ * This function is not thread safe
+ **/
 int vis_valid(varray_t *arr, int id) {
   if ((id >= 0) && (id < arr->after) && 
       (arr->data[id] != NULL))

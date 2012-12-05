@@ -1,5 +1,6 @@
 
 ! pthread interfaces for fortran
+! these interfaces are used in the Fortran code.
 
 interface
     subroutine thread_init(info) bind(c)
@@ -65,7 +66,7 @@ end interface
 interface
     subroutine thread_exit(value_ptr) bind(c)
     use iso_c_binding
-    type(c_ptr),      intent(out)    :: value_ptr
+    type(c_ptr),      intent(in)    :: value_ptr
     end subroutine thread_exit
 end interface
 
@@ -379,7 +380,7 @@ interface
     end subroutine thread_cond_signal
 end interface
 
-#ifdef __DARWIN
+#ifndef __DARWIN
 !****************************************!
 !*    barrier variable routines         *!
 !****************************************!

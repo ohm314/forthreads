@@ -1,5 +1,12 @@
 /*
  * C wrappers to pthreads to make wrapping with Fortran simpler
+ *
+ * Most routines are wrappers to the POSIX threads API. Extensive
+ * documentation is found in the respective manpages.
+ *
+ * We use __POSIX_BARRIERS and __DARWIN to test for
+ * system capabilities. Some functions are only supported on Linux
+ * or systems that also implement optional POSIX threads APIs
  */
 
 
@@ -8,7 +15,9 @@
 #include "ft_attr.h"
 #include "forthread.h"
 
-
+/*
+ * Forthreads initialization routine
+ */
 void thread_init(int *info) {
   int i = 0;
   pthread_t stid;
@@ -55,6 +64,9 @@ void thread_init(int *info) {
   is_initialized = init;
 }
 
+/*
+ * Destruction routine, should be only called at the program end
+ */
 void thread_destroy(int* info) {
   int id;
   for(id = 1; id < threads->after; id++) {
@@ -74,15 +86,20 @@ void thread_destroy(int* info) {
   }
   array_delete(conds);
   array_delete(cond_attrs);
+  
+#ifdef _POSIX_BARRIERS
   for(id = 0; id < barriers->after; id++) {
     thread_barrier_destroy(&id,info);
   }
   array_delete(barriers);
   array_delete(barrier_attrs);
+#endif
+#ifndef __DARWIN
   for(id = 0; id < spinlocks->after; id++) {
     thread_spin_destroy(&id,info);
   }
   varray_delete(spinlocks);
+#endif
   for(id = 0; id < rwlocks->after; id++) {
     thread_rwlock_destroy(&id,info);
   }
@@ -96,6 +113,10 @@ void thread_destroy(int* info) {
 /*         Thread routines               */
 /*****************************************/
 
+/*
+ * Allocate needed memory for the forthreads wrapping
+ * data structures
+ */
 void thread_alloc(int *thread_id, int *info) {
   
   if (!is_initialized) {
@@ -136,7 +157,9 @@ void thread_create(int *thread_id, int *attr_id,
   pthread_mutex_lock(&(threads->mutex));
 
   if (*attr_id == -1) {
-    // TODO: set to NULL
+    // TODO: This should be revisited in the future.
+    // setting attr to NULL would be cleaner, but creating
+    // joinable threads is more practical.
     attr = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
     pthread_attr_init(attr);
     pthread_attr_setdetachstate(attr, PTHREAD_CREATE_JOINABLE);
@@ -151,7 +174,7 @@ void thread_create(int *thread_id, int *attr_id,
 
   *info = pthread_create(threads->data[*thread_id], attr, (*start_routine), arg);
 
-  // TODO remove
+  // TODO: goes with the comment above
   if (*attr_id == -1)
     free(attr);
 
@@ -348,14 +371,24 @@ void thread_atfork(void (**prepare)(void),
 
 }
 
-// cannot be implemented using pthreads
+/*
+ * Connot be wrapped because the standard suggests C macros and
+ * stipulates that _pop and _push must be called in the same scope.
+ * Hence, wrapping and calling from Fortran would break the standard
+ * and most probably crash any code using this.
+ */
 void thread_cleanup_pop(int *execute, int *info) {
   *info = FT_EINVALID;
 
 
 }
 
-// cannot be implemented using pthreads
+/*
+ * Connot be wrapped because the standard suggests C macros and
+ * stipulates that _pop and _push must be called in the same scope.
+ * Hence, wrapping and calling from Fortran would break the standard
+ * and most probably crash any code using this.
+ */
 void thread_cleanup_push(void *(*routine)(void *), void *arg, int* info) {
   *info = FT_EINVALID;
 
@@ -389,8 +422,11 @@ void thread_setconcurrency(int *new_level, int *info) {
 #ifndef __DARWIN
 void thread_getcpuclockid(int *thread, int *clock_id, int *info) {
   *info = FT_OK;
-  clockid_t cid; //we'll it casting onto an int. This may be dangerous
-
+  // we'll be casting this onto an int. This may be dangerous
+  // but Fortran does not know this type (and we want to avoid 
+  // creating Fortran type wrappers).
+  clockid_t cid;   
+  
   if (!is_initialized) {
     *info = FT_EINIT;
     return;
@@ -413,7 +449,6 @@ void thread_getcpuclockid(int *thread, int *clock_id, int *info) {
 }
 #endif
 
-// implements pthread_getschedparam
 void thread_getschedparam(int *thread, int *policy, struct sched_param *param, int *info) {
   *info = FT_OK;
   ;
@@ -436,7 +471,6 @@ void thread_getschedparam(int *thread, int *policy, struct sched_param *param, i
 
 }
 
-// implements pthreads setschedparam
 void thread_setschedparam(int *thread, int *policy, struct sched_param *param, int *info) {
   *info = FT_OK;
 
@@ -559,7 +593,10 @@ void thread_key_create(int *key_id,void (*destructor)(void *),int *info) {
 
 }
 
-// the void pointer probably wont work
+/**
+ * This will need some more testing because void pointers don't
+ * make much sense in Fortran.
+ */
 void thread_getspecific(int *key, void **value, int *info) {
 
   *info = FT_OK;
@@ -582,7 +619,10 @@ void thread_getspecific(int *key, void **value, int *info) {
   pthread_mutex_unlock(&(thread_keys->mutex));
 }
 
-// the void pointer probably wont work
+/**
+ * This will need some more testing because void pointers don't
+ * make much sense in Fortran.
+ */
 void thread_setspecific(int *key, void **value, int *info) {
 
   *info = FT_OK;
@@ -783,7 +823,10 @@ void thread_mutex_setprioceiling(int *mutex, int *prioceiling, int *old_ceiling,
 }
 
 #ifndef __DARWIN
-// TODO see what we can do with timespec
+/*
+ * An API change will be needed here to make calling from Fortran
+ * simpler.
+ */
 void thread_mutex_timedlock(int *mutex, struct timespec *abs_timeout, int *info) {
   *info = FT_OK;
 
@@ -1117,7 +1160,6 @@ void thread_spin_init(int *spinlock_id, int *pshared, int *info) {
 
 }
 
-// TODO: this might need a lock
 void thread_spin_lock(int *lock_id, int *info) {
   *info = FT_OK;
 
@@ -1132,12 +1174,12 @@ void thread_spin_lock(int *lock_id, int *info) {
     return;
   }
 
+  // TODO: this might need a lock
   *info = pthread_spin_lock((pthread_spinlock_t*)(spinlocks->data[*lock_id]));
   
 
 }
 
-// TODO: this might need a lock
 void thread_spin_trylock(int *lock_id, int *info) {
   *info = FT_OK;
 
@@ -1153,12 +1195,12 @@ void thread_spin_trylock(int *lock_id, int *info) {
     return;
   }
 
+  // TODO: this might need a lock
   *info = pthread_spin_trylock((pthread_spinlock_t*)(spinlocks->data[*lock_id]));
 
 }
 
 
-// TODO: this might need a lock
 void thread_spin_unlock(int *lock_id, int *info) {
   *info = FT_OK;
 
@@ -1174,6 +1216,7 @@ void thread_spin_unlock(int *lock_id, int *info) {
     return;
   }
 
+  // TODO: this might need a lock
   *info = pthread_spin_unlock((pthread_spinlock_t*)(spinlocks->data[*lock_id]));
 
 }
@@ -1349,6 +1392,10 @@ void thread_rwlock_unlock(int *lock_id, int *info) {
 
 
 #ifndef __DARWIN
+/*
+ * An API change will be needed here to make calling from Fortran
+ * simpler.
+ */
 void thread_rwlock_timedrdlock(int *lock_id, struct timespec *abs_timeout, int *info) {
   *info = FT_OK;
 
@@ -1368,6 +1415,10 @@ void thread_rwlock_timedrdlock(int *lock_id, struct timespec *abs_timeout, int *
 
 }
 
+/*
+ * An API change will be needed here to make calling from Fortran
+ * simpler.
+ */
 void thread_rwlock_timedwrlock(int *lock_id, struct timespec *abs_timeout, int *info) {
   *info = FT_OK;
 

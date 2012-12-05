@@ -1,4 +1,3 @@
-FDEFINES =
 
 %.o: %.mod
 	true
@@ -15,7 +14,7 @@ forthread.o: forthread.f03 \
 			forthread_data.o \
 			forthread_types.f03 \
 			forthread_types.o
-	$(FC) $(FDEFINES) $(FFLAGS) $(FDEBUG) -c $< -o $@
+	$(FC)  $(FFLAGS) $(FDEBUG) -c $< -o $@
 
 #forthread_data.o: forthread_data.f03 
 #	$(FC) $(FDEFINES) $(FFLAGS) $(FDEBUG) -c -Tf$< -o $@
@@ -24,4 +23,4 @@ forthread.o: forthread.f03 \
 #	$(FC) $(FDEFINES) $(FFLAGS) $(FDEBUG) -c -Tf$< -o $@
 
 clean:
-	rm -f *.o 
+	rm -f *.o *.mod
