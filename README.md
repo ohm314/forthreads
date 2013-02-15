@@ -3,11 +3,10 @@ forthreads
 
 Fortran 2003 wrappers for POSIX threads
 
-Author: Omar Awile
-Date: 5.12.2012
+_Copyright (c) 2012 MOSAIC Group (ETH Zurich & MPI-CBG Dresden)_
 
-Copyright (c) 2012 MOSAIC Group (ETH Zurich & MPI-CBG Dresden)
-
+Introduction
+------------
 
 This library provides Fortran 2003 interfaces to almost all POSIX threads
 functions. Following functions are not available in fortrheads:
