@@ -3,7 +3,7 @@ forthreads
 
 Fortran 2003 wrappers for POSIX threads
 
-_Copyright (c) 2012 MOSAIC Group (ETH Zurich & MPI-CBG Dresden)_
+_Copyright (c) 2012 MOSAIC Group (ETH Zurich & MPI-CBG Dresden), Omar Awile_
 
 Introduction
 ------------
