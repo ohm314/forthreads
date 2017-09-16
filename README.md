@@ -3,7 +3,17 @@ forthreads
 
 Fortran 2003 wrappers for POSIX threads
 
-_Copyright (c) 2012 MOSAIC Group (ETH Zurich & MPI-CBG Dresden), Omar Awile_
+_Copyright (c) 2012-2017 MOSAIC Group (ETH Zurich & MPI-CBG Dresden), Omar Awile_
+
+This project and all files pertaining to it are licensed under the BSD 3-Clause 
+License. Please see the enclosed LICENSE file for the terms.
+
+In order to ensure financial support for our project and allow further
+development of this software, please cite the following publication in all your
+documents and manuscripts that made use of this software. Thanks a lot!
+
+O. Awile and I. F. Sbalzarini. A pthreads wrapper for Fortran 2003. ACM Trans.
+Math. Softw., 40(3):19:1–19:15, 2014.
 
 Introduction
 ------------
@@ -27,3 +37,5 @@ Also, thread start routines can only take an integer and return an integer for
 the same "void-pointer" limitation.
 Maybe in the future a mechanism can be added to allow for more generic argument
 handling.
+
+
