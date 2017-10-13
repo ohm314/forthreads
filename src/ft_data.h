@@ -6,10 +6,6 @@
 
 
 
-#ifdef __DARWIN
-typedef int clockid_t;
-#endif
-
 /**
  * A convenient array type
  **/
