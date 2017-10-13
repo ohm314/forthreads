@@ -1,6 +1,6 @@
 #CC = icc
 #CC = gcc
-CC = clang
+CC = gcc
 #FC = ifort
 FC = gfortran
 #CFLAGS = -fPIC
