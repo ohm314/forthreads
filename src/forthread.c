@@ -303,6 +303,7 @@ void thread_kill(int *thread_id, int *sig, int *info) {
 void thread_once_init(int *once_ctrl, int *info) {
 
   *info = 0;
+  static pthread_once_t once_control_init = PTHREAD_ONCE_INIT;
 
   if (!is_initialized) {
     *info = FT_EINIT;
@@ -316,11 +317,7 @@ void thread_once_init(int *once_ctrl, int *info) {
   }
   once_ctrls->data[once_ctrls->after] = (pthread_once_t*) malloc(sizeof(pthread_once_t));
 
-#ifdef __DARWIN
-  pthread_once((pthread_once_t*)once_ctrls->data[once_ctrls->after],NULL);
-#else
-  *((pthread_once_t*)once_ctrls->data[once_ctrls->after]) = PTHREAD_ONCE_INIT;
-#endif
+  *((pthread_once_t*)once_ctrls->data[once_ctrls->after]) = once_control_init;
 
   *once_ctrl = once_ctrls->after;
   once_ctrls->after++;
