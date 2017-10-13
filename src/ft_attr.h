@@ -18,9 +18,15 @@
  * should be used.
  **/
 
+#include <unistd.h>
 #include <pthread.h>
 #include "ft_consts.h"
 #include "ft_data.h"
+
+#if defined(_POSIX_BARRIERS) && ((_POSIX_BARRIERS + 0) >= 200112L)
+  #define THREAD_POSIX_BARRIERS
+#endif
+
 
 /*****************************************/
 /*      attribute object routines        */
@@ -104,7 +110,7 @@ void thread_condattr_getclock(int *attr, int *clock_id, int *info);
 void thread_condattr_setclock(int *attr, int *clock_id, int *info);
 #endif
 
-#ifdef _POSIX_BARRIERS
+#ifdef THREAD_POSIX_BARRIERS
 /**************************************************/
 /*    barrier attribute variable routines         */
 /**************************************************/

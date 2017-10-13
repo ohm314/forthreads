@@ -1,6 +1,7 @@
 #ifndef FORT_PTHREAD_H_
 #define FORT_PTHREAD_H_
 
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -132,7 +133,7 @@ void thread_cond_signal(int *cond_id, int *info);
 
 
 
-#ifdef _POSIX_BARRIERS
+#ifdef THREAD_POSIX_BARRIERS
 /****************************************/
 /*    barrier variable routines         */
 /****************************************/

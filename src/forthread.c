@@ -4,7 +4,7 @@
  * Most routines are wrappers to the POSIX threads API. Extensive
  * documentation is found in the respective manpages.
  *
- * We use __POSIX_BARRIERS and __DARWIN to test for
+ * We use _POSIX_BARRIERS and __DARWIN to test for
  * system capabilities. Some functions are only supported on Linux
  * or systems that also implement optional POSIX threads APIs
  */
@@ -87,7 +87,7 @@ void thread_destroy(int* info) {
   array_delete(conds);
   array_delete(cond_attrs);
   
-#ifdef _POSIX_BARRIERS
+#ifdef THREAD_POSIX_BARRIERS
   for(id = 0; id < barriers->after; id++) {
     thread_barrier_destroy(&id,info);
   }
@@ -995,7 +995,7 @@ void thread_cond_signal(int *cond_id, int *info) {
 
 
 
-#ifdef _POSIX_BARRIERS
+#ifdef THREAD_POSIX_BARRIERS
 /****************************************/
 /*    barrier variable routines         */
 /****************************************/

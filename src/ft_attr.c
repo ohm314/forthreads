@@ -785,7 +785,7 @@ void thread_condattr_setclock(int *attr, int *clock_id, int *info) {
 #endif
 
 
-#ifdef _POSIX_BARRIERS
+#ifdef THREAD_POSIX_BARRIERS
 /**************************************************/
 /*    barrier attribute variable routines         */
 /**************************************************/
